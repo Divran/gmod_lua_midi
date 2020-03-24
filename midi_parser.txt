@@ -1,0 +1,310 @@
+--[[
+if not bit then
+    bit = {
+        lshift = function(a,b)
+            return a << b
+        end,
+        rshift = function(a,b)
+            return a >> b
+        end,
+        band = function(a,b)
+            return a & b
+        end
+    }
+end
+]]
+
+function parseMIDI( str )
+    -- much help from https://github.com/nguyenkien07/parse-midi-file-lua/blob/master/midi.lua
+    local byte = string.byte
+    local sub = string.sub
+    local filepos = 1
+    local band = bit.band
+    local lshift = bit.lshift
+    local rshift = bit.rshift
+    local parsed = {}
+
+    local parse = {
+        [4] = function( s )
+            return  16777216*byte(sub(s,1)) +
+                    65536*byte(sub(s,2)) +
+                    256*byte(sub(s,3)) + 
+                    byte(sub(s,4))
+        end,
+        [3] = function( s )
+            return  65536*byte(sub(s,1)) +
+                    256*byte(sub(s,2)) + 
+                    byte(sub(s,3))
+        end,
+        [2] = function( s )
+            return 256*byte(sub(s,1))+
+                    byte(sub(s,2))
+        end,
+    }
+    
+    local function buildInstrumentMap(channel10)
+        local instruments = {
+            bass = "sound/instruments/bass.wav",
+            cymbal = "sound/instruments/cymbal.wav",
+            hi_hat = "sound/instruments/hi_hat.wav",
+            hi_tom = "sound/instruments/high_tom.wav",
+            piano = "sound/instruments/pianoa_440.wav",
+            pianoc = "sound/instruments/pianoc.wav",
+            snare = "sound/instruments/snare.wav",
+            
+            pwm_12_5 = "sound/synth/12_5_pwm_440.wav",
+            pwm_25 = "sound/synth/25_pwm_440.wav",
+            pwm_75 = "sound/synth/75_pwm_440.wav",
+            saw = "sound/synth/saw_440.wav",
+            saw_inverted = "sound/synth/saw_inverted_440.wav",
+            sine = "sound/synth/sine_440.wav",
+            square = "sound/synth/square_440.wav",
+            triangle = "sound/synth/triangle_440.wav",
+            
+            triangle_880 = "sound/synth/triangle_880.wav"
+        }
+    
+        local map_inverse = {}
+        local fallback = ""
+        
+        if channel10 then
+            map_inverse = {
+                [instruments.snare] = {37,39},
+                [instruments.hi_hat] = {41,43,45},
+                [instruments.hi_tom] = {40,42,44,46,47,49},
+                [instruments.bass] = {34,35},
+                [instruments.cymbal] = {48,50,51,54,57,58}
+            }
+            
+            fallback = instruments.hi_tom
+        else
+            map_inverse = {
+                [instruments.triangle_880] = {1},
+                --[instruments.sine] = {40},
+                [instruments.piano] = {2,3,4,5,6,7},
+                [instruments.bass] = {32,33,34,35,36,37,38,39},
+                [instruments.cymbal] = {120},
+                [instruments.pwm_75] = {30},
+                [instruments.saw] = {29,40}
+            }
+            
+            fallback = instruments.saw
+        end
+        
+        local map = {}
+        for instrument_path,v in pairs( map_inverse ) do
+            for _,key in pairs( v ) do
+              map[key] = instrument_path
+            end
+        end
+        return map
+    end
+    
+    local map = buildInstrumentMap(false)
+    local channel10map = buildInstrumentMap(true)
+
+    local function getInstrumentFilePath(event)
+        local program = event.param1
+        
+        local key_to_instrument_map = map
+        if event.channel == 10 then key_to_instrument_map = channel10map end
+        event.instrument = key_to_instrument_map[program] or fallback
+        
+        if event.instrument then
+            print("SETTING INSTRUMENT",event.channel,event.instrument,program)
+            parsed.instruments[event.instrument] = true
+        else
+            print("unable to find instrument for",event.channel,program)
+        end
+    end
+
+    local function get( str, len, doparse )
+        local got = sub( str, filepos, filepos + (len or 1) - 1 )
+        --print("got:",filepos,filepos + (len or 0),got)
+        filepos = filepos + (len or 1)
+
+        if doparse then got = parse[len]( got ) end
+
+        return got
+    end
+
+    local function variableLengthNumber(s)
+        local ret = 0
+        repeat
+            local current_num = byte(get(s))
+            ret = lshift(ret,7) + band(current_num,0x7F)
+        until band(current_num,0x80) ~= 128
+        return ret
+    end
+
+    if get(str,4) ~= "MThd" then
+        error("Invalid MIDI file, MThd header missing")
+    end
+    
+    coroutine.yield() -- initial yield, next will enter think hook
+
+
+    -- get file headers
+    local length = get(str,4,true)
+    local format = get(str,2,true)
+    local ntracks = get(str,2,true)
+    local tickdiv = get(str,2,true)
+    
+    -- tempo calculator helper function
+    local function tempo2ms( tempo )
+        --return tempo/1000/parsed.ppqn
+        return 60000/parsed.ppqn/tempo
+    end
+    
+    local tickmethod = band(tickdiv,0x4000)
+    if tickmethod == 0 then -- metrical timing. bits 0-14 = pulses per quarter note, ppqn
+        parsed.ppqn = band(tickdiv,0x3FFF)
+        
+        local tempo = 120 -- default tempo of 120
+        parsed["ms"] = tempo2ms(tempo)
+        print("Tempo timing",parsed.ms)
+    elseif tickmethod == 1 then -- absolute timing. bits 8-14 = frames per second. bits 0-7 = sub divisions per frame
+        parsed["fps"] = rshift(band(tickdiv,0x7FFF),8)
+        parsed["subdivisions"] = band(tickdiv,0xFF)
+        parsed["ms"] = parsed["fps"] / parsed["subdivisions"]
+        print("Absolute timing",parsed.ms)
+    end
+
+    parsed["format"] = format
+    parsed["instruments"] = {}
+    parsed["tracks"] = {}
+
+    -- check tracks
+    local running = false
+    while filepos < #str - 8 do
+        local track_head = get(str,4)
+        if track_head ~= "MTrk" then error("Invalid MIDI file, MTrk header missing") end
+
+        local track_length = get(str,4,true)
+        if track_length > #str then error("Invalid MIDI file, track length is larger than file length") end
+        local track_end = filepos + track_length
+
+        local track = {}
+
+        local parsed_index = 1
+
+        -- decode this track
+        while filepos < track_end - 1 do
+            local deltatime = variableLengthNumber(str)
+            local event = byte(get(str))
+
+            --print("filepos",filepos,str:sub(filepos,filepos+20))
+
+            if event < 0xF0 then -- midi event
+                --print("midi event")
+                if band(event,255) > 127 then -- not running
+                    running = event -- set for future possible running events
+                else
+                    if running == false then error("Invalid MIDI file, tried to use running even incorrectly") end
+                    event = running
+                    filepos = filepos - 1
+                end
+
+                local command = band(event,0xFF0)
+                local channel = band(event,0xF)
+
+                local e = {}
+                e["deltatime"] = deltatime
+                e["channel"] = channel
+                e["param1"] = byte(get(str))
+
+                if command == 0x80 then -- Note off
+                    e["command"] = "note off"
+                    e["param2"] = byte(get(str))
+                elseif command == 0x90 then -- Note open
+                    e["command"] = "note on"
+                    e["param2"] = byte(get(str))
+                elseif command == 0xA0 then -- Polyphonic pressure
+                    e["command"] = "polyphonic pressure"
+                    e["param2"] = byte(get(str))
+                elseif command == 0xB0 then -- Controller
+                    e["command"] = "control change"
+                    e["param2"] = byte(get(str))
+                elseif command == 0xC0 then -- Program change
+                    e["command"] = "program change"
+                    getInstrumentFilePath(e)
+                elseif command == 0xD0 then -- Channel pressure
+                    e["command"] = "channel pressure"
+                elseif command == 0xE0 then -- Pitch blend
+                    e["command"] = "pitch blend"
+                    local param2 = byte(get(str))
+                    e["param2"] = 128 * param2 + e.param1 - 8192
+                end
+
+                track[parsed_index] = e
+                parsed_index = parsed_index + 1
+            elseif event == 0xFF then -- Meta event
+                local command = byte(get(str))
+                local length = variableLengthNumber(str)
+                
+                if command == 0x51 then -- Tempo
+                    if length ~= 3 then error("Invalid MIDI file, expected meta event length of 3 in 'tempo' event") end
+                    
+                    if tickmethod == 0 then
+                        local tempo = get(str,3,true)
+                    
+                        track[parsed_index] = {
+                            deltatime = deltatime,
+                            command = "tempo",
+                            param1 = tempo
+                        }
+                        track[parsed_index].new_ms = tempo2ms(tempo)
+                        parsed_index = parsed_index + 1
+                    else
+                        get(str,3) -- read and forget data to move filepos
+                    end
+                elseif command == 0x2F then -- End of track
+                    if length ~= 0 then error("Invalid MIDI file, expected meta event length of 0 in 'end of track' event") end
+                    
+                    track[parsed_index] = {
+                        deltatime = deltatime,
+                        command = "end of track"
+                    }
+                    parsed_index = parsed_index + 1
+                else
+                    get(str,length) -- read and forget data to move filepos
+                end
+                
+
+                --[[
+                -- code to get track name and instrument name etc (unused)
+                local e = {}
+                e["deltatime"] = deltatime
+
+                if command == 3 then -- track name
+                    e["command"] = "track name"
+                    e["param1"] = str:get(length)
+                elseif command == 4 then -- instrument name
+                    e["command"] = "instrument name"
+                    e["param1"] = str:get(length)
+                else
+                    local junk = str:get(length) -- read and forget data to move filepos
+                end
+                ]]
+            elseif event == 0xF0 or event == 0xF7 then -- SysEx event
+                local length = variableLengthNumber(str)
+                get(str,length) -- read and forget data to move filepos
+                -- ignore SysEx events
+            elseif event == 0xF2 then get(str,3) -- song_position
+            elseif event == 0xF3 then get(str,2) -- song_select
+            --elseif event == 0xF6 then -- tune_request
+            elseif event > 0xF0 then get(str,2) -- unknown event
+            else
+                error("Invalid MIDI file, unknown event")
+            end
+            coroutine.yield() -- yield once after each event
+        end
+
+        -- override filepos with correct position
+        filepos = track_end
+        parsed["tracks"][#parsed["tracks"]+1] = track
+        coroutine.yield() -- yield once after each track
+    end
+
+    return parsed
+end
