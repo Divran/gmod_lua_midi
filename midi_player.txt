@@ -7,7 +7,17 @@
 require("sounds.txt")
 require("midi_parser.txt")
 
-local download = "http://www.theparticle.com/files/library/audio/doom/d_e1m1.mid" -- doom theme
+local name = ""
+local function addName(str)
+    print(str)
+    name = name .. str .. "\n"
+    setName(name)
+end
+local function changeName(str)
+    setName(name .. "\n\n" .. str)
+end
+
+--local download = "http://www.theparticle.com/files/library/audio/doom/d_e1m1.mid" -- doom theme
 --local download = "https://upload.wikimedia.org/wikipedia/commons/5/55/MIDI_sample.mid"
 --local download = "https://bitmidi.com/uploads/85263.mid" -- pirates of the carribean
 --local download = "https://bitmidi.com/uploads/105034.mid" -- toto africa
@@ -28,6 +38,20 @@ local download = "http://www.theparticle.com/files/library/audio/doom/d_e1m1.mid
 local my_ip = "http://81.237.238.124/"
 --local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeLostWoodsTheme.mid"
 --local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- needs instrument adjustment
+--local download = my_ip .. "midi/Firefly.mid"
+--local download = my_ip .. "midi/TVThemesFriends.mid"
+--local download = my_ip .. "midi/MissionImpossible88.mid"
+--local download = my_ip .. "midi/Family_Guy_Theme_Score.mid"
+--local download = my_ip .. "midi/Jeopardy.mid"
+--local download = my_ip .. "midi/Pingu.mid"
+--local download = my_ip .. "midi/Pokemon_2.mid"
+--local download = my_ip .. "midi/Seinfeld.mid" -- freq ~300
+--local download = my_ip .. "midi/Countdown.mid"
+--local download = my_ip .. "midi/Countdown_StephenWillis.mid"
+--local download = my_ip .. "midi/dragonforce_fireflames.mid"
+--local download = my_ip .. "midi/zelda/ZeldaTwilightPrincessKakarikoVillage.mid"
+--local download = my_ip .. "midi/Quadran__Unlovable_MIKE_Remix__Scapiro_20071019234433.mid"
+
 
 --local download = "https://red.extra.tools/beach.mid" -- meme
 --local download = "https://red.extra.tools/heart.mid" -- titanic theme
@@ -40,10 +64,10 @@ local my_ip = "http://81.237.238.124/"
 --local download = "https://freemidi.org/getter-24773" -- free bird
 
 --local forced_instrument = "sound/synth/tri.wav"
-local base_frequency = 480 -- 880
+local base_frequency = 900 -- 880
 
 local function doParse(str,callback)
-    print("PARSING MIDI FILE")
+    changeName("Parsing MIDI file")
     local co = coroutine.create( parseMIDI )
     coroutine.resume( co, str, forced_instrument )
     
@@ -65,7 +89,7 @@ local function doParse(str,callback)
             end
             
             if coroutine.status( co ) == "dead" then
-                print("DONE PARSING!")
+                changeName("Done parsing!")
                 hook.remove( "think", "parseMIDI" )
                 callback( status )
                 return
@@ -85,7 +109,8 @@ local function playMIDI(parsed)
     local num_instruments = 0
     for _,v in pairs( parsed.instruments ) do num_instruments = num_instruments + v end
     if bass.soundsLeft() < num_instruments then
-        error("Too many different instruments for current starfall bass limits (requires "..num_instruments.." of available " .. bass.soundsLeft() .. ")") 
+        changeName("Too many different instruments for current starfall bass limits (requires "..num_instruments.." of available "..bass.soundsLeft()..")")
+        error("Too many different instruments for current starfall bass limits (requires "..num_instruments.." of available "..bass.soundsLeft()..")") 
     end
     
     local sound_channels = {}
@@ -153,24 +178,25 @@ local function playMIDI(parsed)
     
     local loading = 0
     local proceed
-    print("LOADING SOUND CHANNELS")
+    changeName("Loading sound channels")
     for instrument, num_per_instrument in pairs( parsed.instruments ) do
-        print("Loading",num_per_instrument.."x",instrument)
         for i=1,num_per_instrument do
             loading = loading + 1
             wait = wait + 0.05
             timer.simple(wait,function()
+                changeName("Loading " .. num_per_instrument.."x '"..instrument.."'")
                 --bass.loadFile( instrument, "noplay noblock", function(snd,err,b)
                 bass.loadURL( instrument, "noplay noblock", function(snd,err,b)
                     if err ~= 0 then
-                        print("unable to load sound",instrument,err,b)
+                        changeName("unable to load sound '"..instrument.."'")
+                        print("sound error:",err,b)
                     else
                         addAvailableSound(instrument,snd)
                     end
                     
                     loading = loading - 1
                     if loading == 0 then
-                        print("DONE LOADING!")
+                        changeName("Done loading!")
                         proceed() 
                     end
                 end )
@@ -365,20 +391,20 @@ local function playMIDI(parsed)
             end
             
             if format == 0 then -- only one track
-                print("format is 0, playing 1st track")
+                changeName("Playing 1st track!")
                 playTrack(parsed.tracks[1],function()
-                    print("DONE PLAYING!")
+                    changeName("Done playing!")
                     hook.remove("think","playthink")
                 end)    
             elseif format == 1 then -- several tracks, and first tracks contains all tempos
-                print("format is 1, playing all tracks simultaneously")
+                changeName("Playing!")
                 local played = #parsed.tracks
                 for i=1,#parsed.tracks do
                     --if i==9 then continue end
                     playTrack(parsed.tracks[i],function()
                         played = played - 1
                         if played == 0 then
-                            print("DONE PLAYING!")
+                            changeName("Done playing!")
                             hook.remove("think","playthink")
                         end
                     end)
@@ -389,12 +415,13 @@ local function playMIDI(parsed)
                 local function playNext()
                     current_track = current_track + 1
                     if parsed.tracks[current_track] then
-                        --print("Track '"..current_track.."' done, playing next track in 4 seconds...")
+                        changeName("Playing track nr "..current_track.."!")
                         playTrack(parsed.tracks[current_track],function()
+                            changeName("Track '"..current_track.."' done, playing next track in 4 seconds...")
                             timer.simple(4,playNext)
                         end)
                     else
-                        print("DONE PLAYING!")
+                        changeName("Done playing!")
                         hook.remove("think","playthink")
                     end
                 end
@@ -404,6 +431,8 @@ local function playMIDI(parsed)
     end
 end
 
+addName("Downloading '"..download.."'")
 http.get(download,function(str)
+    changeName("Done downloading!")
     doParse(str,playMIDI)
 end,function(a,b,c) print(a,b,c) end)
