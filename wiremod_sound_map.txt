@@ -1,0 +1,67 @@
+--@name Wiremod sound map
+--@author
+--@shared
+
+
+    local function buildInstrumentMap(percussion)
+        local instruments = {
+            --bass = "sound/instruments/bass.wav",
+            bass = "sound/instruments/high_tom.wav",
+            
+            cymbal = "sound/instruments/cymbal.wav",
+            hi_hat = "sound/instruments/hi_hat.wav",
+            hi_tom = "sound/instruments/high_tom.wav",
+            piano = "sound/instruments/pianoa_440.wav",
+            pianoc = "sound/instruments/pianoc.wav",
+            snare = "sound/instruments/snare.wav",
+            
+            pwm_12_5 = "sound/synth/12_5_pwm_440.wav",
+            pwm_25 = "sound/synth/25_pwm_440.wav",
+            pwm_75 = "sound/synth/75_pwm_440.wav",
+            saw = "sound/synth/saw_440.wav",
+            saw_inverted = "sound/synth/saw_inverted_440.wav",
+            sine = "sound/synth/sine_440.wav",
+            square = "sound/synth/square_440.wav",
+            triangle = "sound/synth/triangle_440.wav",
+            
+            triangle_880 = "sound/synth/triangle_880.wav"
+        }
+    
+        local map_inverse = {}
+        local fallback = ""
+        
+        if percussion then
+            -- TODO: MATCH THIS BY KEY, NOT PROGRAM
+            map_inverse = {
+                [instruments.snare] = {37,39},
+                [instruments.hi_hat] = {41,43,45},
+                [instruments.hi_tom] = {40,42,44,46,47,49},
+                [instruments.bass] = {34,35},
+                [instruments.cymbal] = {48,50,51,54,57,58}
+            }
+            fallback = instruments.hi_tom
+        else
+            map_inverse = {
+                --[instruments.triangle_880] = {1},
+                --[instruments.sine] = {40},
+                [instruments.piano] = {0,1,2,3,4,5,6,7},
+                [instruments.hi_tom] = {32,33,34,35,36,37,38,39},
+                [instruments.cymbal] = {120,40},
+                [instruments.pwm_75] = {30},
+                [instruments.saw] = {29}
+            }
+            fallback = instruments.triangle
+        end
+        
+        local map = {}
+        for instrument_path,v in pairs( map_inverse ) do
+            for _,key in pairs( v ) do
+              map[key] = instrument_path
+            end
+        end
+        map.default = fallback
+        return map
+    end
+    
+    local map = buildInstrumentMap(false)
+    local percussionmap = buildInstrumentMap(true)

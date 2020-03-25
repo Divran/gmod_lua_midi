@@ -1,3 +1,7 @@
+--@name midi parser
+--@author Divran
+--@client
+
 --[[
 if not bit then
     bit = {
@@ -42,88 +46,51 @@ function parseMIDI( str, forced_instrument )
         end,
     }
     
-    local function buildInstrumentMap(percussion)
-        local instruments = {
-            --bass = "sound/instruments/bass.wav",
-            bass = "sound/instruments/high_tom.wav",
-            
-            cymbal = "sound/instruments/cymbal.wav",
-            hi_hat = "sound/instruments/hi_hat.wav",
-            hi_tom = "sound/instruments/high_tom.wav",
-            piano = "sound/instruments/pianoa_440.wav",
-            pianoc = "sound/instruments/pianoc.wav",
-            snare = "sound/instruments/snare.wav",
-            
-            pwm_12_5 = "sound/synth/12_5_pwm_440.wav",
-            pwm_25 = "sound/synth/25_pwm_440.wav",
-            pwm_75 = "sound/synth/75_pwm_440.wav",
-            saw = "sound/synth/saw_440.wav",
-            saw_inverted = "sound/synth/saw_inverted_440.wav",
-            sine = "sound/synth/sine_440.wav",
-            square = "sound/synth/square_440.wav",
-            triangle = "sound/synth/triangle_440.wav",
-            
-            triangle_880 = "sound/synth/triangle_880.wav"
-        }
-    
-        local map_inverse = {}
-        local fallback = ""
+    -- try to check if one channel plays 
+    -- more than one note at the same time
+    local instrument_amt_playing = {}
+    local channel_instruments = {}
+    local tempo_ms = 0
+    local function playSound(event)
+        local instrument = event.instrument
+        if not instrument then instrument = channel_instruments[event.channel] end
+        if not instrument then return end
         
-        if percussion then
-            -- TODO: MATCH THIS BY KEY, NOT PROGRAM
-            map_inverse = {
-                [instruments.snare] = {37,39},
-                [instruments.hi_hat] = {41,43,45},
-                [instruments.hi_tom] = {40,42,44,46,47,49},
-                [instruments.bass] = {34,35},
-                [instruments.cymbal] = {48,50,51,54,57,58}
-            }
-            fallback = instruments.hi_tom
-        else
-            map_inverse = {
-                --[instruments.triangle_880] = {1},
-                --[instruments.sine] = {40},
-                [instruments.piano] = {0,1,2,3,4,5,6,7},
-                [instruments.hi_tom] = {32,33,34,35,36,37,38,39},
-                [instruments.cymbal] = {120,40},
-                [instruments.pwm_75] = {30},
-                [instruments.saw] = {29}
-            }
-            fallback = instruments.triangle
-        end
-        
-        local map = {}
-        for instrument_path,v in pairs( map_inverse ) do
-            for _,key in pairs( v ) do
-              map[key] = instrument_path
-            end
-        end
-        map.default = fallback
-        return map
+        instrument_amt_playing[instrument] = 
+            (instrument_amt_playing[instrument] or 0) + 1
+            
+        parsed.instruments[instrument] = math.max(
+            parsed.instruments[instrument] or 0,
+            instrument_amt_playing[instrument]
+        )
     end
+    local function stopSound(event)
+        local instrument = event.instrument
+        if not instrument then instrument = channel_instruments[event.channel] end
+        if not instrument then return end
     
-    local map = buildInstrumentMap(false)
-    local percussionmap = buildInstrumentMap(true)
+        instrument_amt_playing[instrument] = 
+            (instrument_amt_playing[instrument] or 0) - 1
+            
+        if instrument_amt_playing[instrument] < 0 then
+            instrument_amt_playing[instrument] = 0
+        end
+    end
 
     local function getInstrumentFilePath(event)
-        local program = event.param1
-        
         if forced_instrument then
             event.instrument = forced_instrument
         else
-            local key_to_instrument_map = map
-            if event.channel == 9 then
-                -- TODO: MATCH BY KEY, NOT PROGRAM
-                key_to_instrument_map = percussionmap
-            end
-            event.instrument = key_to_instrument_map[program] or key_to_instrument_map.default
+            event.instrument = getMIDISound(
+                event.channel, -- channel
+                event.param1 -- program or key
+            )
         end
         
         if event.instrument then
-            print("SETTING INSTRUMENT",event.channel,event.instrument,program)
-            parsed.instruments[event.instrument] = true
+            parsed.instruments[event.instrument] = 1
         else
-            print("unable to find instrument for",event.channel,program)
+            print("unable to find instrument for",event.channel,event.param1)
         end
     end
 
@@ -234,9 +201,23 @@ function parseMIDI( str, forced_instrument )
                 if command == 0x80 then -- Note off
                     e["command"] = "note off"
                     e["param2"] = byte(get(str))
-                elseif command == 0x90 then -- Note open
+                    if e.channel == 9 then
+                        getInstrumentFilePath(e)
+                        --print("SETTING INSTRUMENT (c)",e.channel,e.instrument,e.param1)
+                    end
+                    stopSound(e)
+                elseif command == 0x90 then -- Note on
                     e["command"] = "note on"
                     e["param2"] = byte(get(str))
+                    if e.channel == 9 then
+                        getInstrumentFilePath(e)
+                        --print("SETTING INSTRUMENT (b)",e.channel,e.instrument,e.param1)
+                    end
+                    if e.param2 == 0 then
+                        stopSound(e)
+                    else
+                        playSound(e)
+                    end
                 elseif command == 0xA0 then -- Polyphonic pressure
                     e["command"] = "polyphonic pressure"
                     e["param2"] = byte(get(str))
@@ -245,7 +226,10 @@ function parseMIDI( str, forced_instrument )
                     e["param2"] = byte(get(str))
                 elseif command == 0xC0 then -- Program change
                     e["command"] = "program change"
-                    getInstrumentFilePath(e)
+                    if e.channel ~= 9 then
+                        getInstrumentFilePath(e)
+                        channel_instruments[e.channel] = e.instrument
+                    end
                 elseif command == 0xD0 then -- Channel pressure
                     e["command"] = "channel pressure"
                 elseif command == 0xE0 then -- Pitch blend

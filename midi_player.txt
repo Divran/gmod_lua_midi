@@ -1,26 +1,35 @@
 --@name midi player
---@author
+--@author Divran
 --@client
 --@include midi_parser.txt
+--@include sounds.txt
 
+require("sounds.txt")
 require("midi_parser.txt")
 
---local download = "http://www.theparticle.com/files/library/audio/doom/d_e1m1.mid" -- doom theme (sounds like ass)
+local download = "http://www.theparticle.com/files/library/audio/doom/d_e1m1.mid" -- doom theme
 --local download = "https://upload.wikimedia.org/wikipedia/commons/5/55/MIDI_sample.mid"
---local download = "https://bitmidi.com/uploads/85263.mid" -- pirates of the carribean (works kinda ok)
+--local download = "https://bitmidi.com/uploads/85263.mid" -- pirates of the carribean
 --local download = "https://bitmidi.com/uploads/105034.mid" -- toto africa
 --local download = "https://bitmidi.com/uploads/91361.mid" -- darude (works well)
 --local download = "https://bitmidi.com/uploads/72257.mid" -- mario theme (works alright)
 --local download = "https://bitmidi.com/uploads/87390.mid" -- rickroll (eeeh)
+--local download = "https://bitmidi.com/uploads/79829.mid" -- better rickroll
 --local download = "https://bitmidi.com/uploads/4280.mid" -- Age of empires 2 title theme (sounds like ass)
---local download = "https://bitmidi.com/uploads/68140.mid" -- zelda overworld theme
 --local download = "https://bitmidi.com/uploads/101128.mid" -- dragonborn theme (awesome)
---local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat (sounds ehh, wrong instrument)
---local download = "https://bitmidi.com/uploads/112953.mid" -- ganon's theme (sounds shit)
+--local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat
+
+-- zelda
+--local download = "https://bitmidi.com/uploads/68140.mid" -- zelda overworld theme
+--local download = "https://bitmidi.com/uploads/112953.mid" -- ganon's theme
 --local download = "https://bitmidi.com/uploads/101518.mid" -- dragon roost island (sounds shit, might need implementation of key velocity to fix)
 --local download = "https://bitmidi.com/uploads/101561.mid" -- hyrule field twilight princess (sounds great)
 
-local download = "https://red.extra.tools/beach.mid" -- meme
+local my_ip = "http://81.237.238.124/"
+--local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeLostWoodsTheme.mid"
+--local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- needs instrument adjustment
+
+--local download = "https://red.extra.tools/beach.mid" -- meme
 --local download = "https://red.extra.tools/heart.mid" -- titanic theme
 --local download = "https://bitmidi.com/uploads/85738.mid" -- pokemon elite four
 --local download = "https://bitmidi.com/uploads/85754.mid" -- pokemon center
@@ -28,7 +37,10 @@ local download = "https://red.extra.tools/beach.mid" -- meme
 --local download = "https://bitmidi.com/uploads/110325.mid" -- mii channel
 --local download = "https://bitmidi.com/uploads/100444.mid" -- tetris
 
+--local download = "https://freemidi.org/getter-24773" -- free bird
+
 --local forced_instrument = "sound/synth/tri.wav"
+local base_frequency = 480 -- 880
 
 local function doParse(str,callback)
     print("PARSING MIDI FILE")
@@ -71,12 +83,11 @@ local function playMIDI(parsed)
     -- instantly as necessary later
     local wait = 0
     local num_instruments = 0
-    for _,_ in pairs( parsed.instruments ) do num_instruments = num_instruments + 1 end
+    for _,v in pairs( parsed.instruments ) do num_instruments = num_instruments + v end
+    if bass.soundsLeft() < num_instruments then
+        error("Too many different instruments for current starfall bass limits (requires "..num_instruments.." of available " .. bass.soundsLeft() .. ")") 
+    end
     
-    if bass.soundsLeft() < num_instruments then error("Too many different instruments for current starfall bass limits") end
-    
-    local num_per_channel = math.floor(bass.soundsLeft() / num_instruments)
-    print("Creating",num_per_channel,"sound channels per sound")
     local sound_channels = {}
     
     local channel_pitches = {}
@@ -143,13 +154,14 @@ local function playMIDI(parsed)
     local loading = 0
     local proceed
     print("LOADING SOUND CHANNELS")
-    for instrument, _ in pairs( parsed.instruments ) do
-        print("Loading",instrument)
-        for i=1,num_per_channel do
+    for instrument, num_per_instrument in pairs( parsed.instruments ) do
+        print("Loading",num_per_instrument.."x",instrument)
+        for i=1,num_per_instrument do
             loading = loading + 1
-            wait = wait + 0.1
+            wait = wait + 0.05
             timer.simple(wait,function()
-                bass.loadFile( instrument, "noplay noblock", function(snd,err,b)
+                --bass.loadFile( instrument, "noplay noblock", function(snd,err,b)
+                bass.loadURL( instrument, "noplay noblock", function(snd,err,b)
                     if err ~= 0 then
                         print("unable to load sound",instrument,err,b)
                     else
@@ -206,13 +218,22 @@ local function playMIDI(parsed)
         [1]=27.5
     }
     
-    local function playSound( channel, key, velocity )
-        local path = getPathFromChannel(channel)
+    local function playSound( event )
+        local channel = event.channel
+        local key = event.param1
+        local velocity = event.param2
+        
+        local path
+        if event.instrument then
+            path = event.instrument
+        else
+            path = getPathFromChannel(channel)
+        end
         if not path then return end
         --if not path then error("MIDI tried to use nonexistant sound channel '"..channel.."'") end
         
-        local basefreq = 880
-        if string.find(path,"piano") == nil then basefreq = 880 end
+        local basefreq = base_frequency or 440
+        --if string.find(string.lower(path),"piano") == nil then basefreq = 880 end
             
         local freq = key_to_freq[key] or basefreq
         local pitchmult = freq / basefreq -- this will do for now, may fix later
@@ -231,9 +252,19 @@ local function playMIDI(parsed)
         status.key = key
     end
     
-    local function stopSound( channel, key )
-        local path = getPathFromChannel(channel)
+    local function stopSound( event )
+        local channel = event.channel
+        local key = event.param1
+        local velocity = event.param2
+        
+        local path
+        if event.instrument then
+            path = event.instrument
+        else
+            path = getPathFromChannel(channel)
+        end
         if not path then return end
+            
         --if not path then error("MIDI tried to use nonexistant sound channel '"..channel.."'") end
         
         local sound = getSoundByKey(path,key)
@@ -252,23 +283,15 @@ local function playMIDI(parsed)
     
     local events = {
         ["note on"] = function(event)
-            local channel = event.channel
-            local key = event.param1
             local velocity = event.param2
             
             if velocity == 0 then
-                stopSound( channel, key )
+                stopSound( event )
             else
-                playSound( channel, key, velocity )
+                playSound( event  )
             end
         end,
-        ["note off"]= function(event)
-            local channel = event.channel
-            local key = event.param1
-            --local velocity = event.param2
-            
-            stopSound( channel, key )
-        end,
+        ["note off"] = stopSound,
         ["polyphonic pressure"] = function(event)
             -- not used for now
         end,
@@ -297,20 +320,20 @@ local function playMIDI(parsed)
     }
     
     proceed = function()
-        timer.simple(0.5,function()
+        timer.simple(0.1,function()
             local nextEvents = {}
             hook.add("think","playthink",function()
                 for i=#nextEvents,1,-1 do
                     local event = nextEvents[i]
                     if timer.realtime() >= event.processAt then
-                        event.callback()
+                        event.callback(event.processAt)
                         table.remove(nextEvents,i)
                     end
                 end
             end)
             local function playTrack(track,callback)
                 local index = 1
-                local function doEvent()
+                local function doEvent(lastProcessTime)
                     while true do
                         local event = track[index]
                         if not event or event.command == "end of track" then
@@ -329,7 +352,7 @@ local function playMIDI(parsed)
                             index = index + 1
                         else
                             nextEvents[#nextEvents+1] = {
-                                processAt = timer.realtime() + parsed.ms * event.deltatime / 1000,
+                                processAt = lastProcessTime + parsed.ms * event.deltatime / 1000,
                                 callback = doEvent
                             }
                             event.deltatime = 0
@@ -338,7 +361,7 @@ local function playMIDI(parsed)
                     end
                 end
                 
-                doEvent()
+                doEvent(timer.realtime())
             end
             
             if format == 0 then -- only one track
@@ -349,10 +372,9 @@ local function playMIDI(parsed)
                 end)    
             elseif format == 1 then -- several tracks, and first tracks contains all tempos
                 print("format is 1, playing all tracks simultaneously")
-                local played = 0
+                local played = #parsed.tracks
                 for i=1,#parsed.tracks do
                     --if i==9 then continue end
-                    played = played + 1
                     playTrack(parsed.tracks[i],function()
                         played = played - 1
                         if played == 0 then
