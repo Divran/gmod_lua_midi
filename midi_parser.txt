@@ -14,7 +14,7 @@ if not bit then
 end
 ]]
 
-function parseMIDI( str )
+function parseMIDI( str, forced_instrument )
     -- much help from https://github.com/nguyenkien07/parse-midi-file-lua/blob/master/midi.lua
     local byte = string.byte
     local sub = string.sub
@@ -42,9 +42,11 @@ function parseMIDI( str )
         end,
     }
     
-    local function buildInstrumentMap(channel10)
+    local function buildInstrumentMap(percussion)
         local instruments = {
-            bass = "sound/instruments/bass.wav",
+            --bass = "sound/instruments/bass.wav",
+            bass = "sound/instruments/high_tom.wav",
+            
             cymbal = "sound/instruments/cymbal.wav",
             hi_hat = "sound/instruments/hi_hat.wav",
             hi_tom = "sound/instruments/high_tom.wav",
@@ -67,7 +69,8 @@ function parseMIDI( str )
         local map_inverse = {}
         local fallback = ""
         
-        if channel10 then
+        if percussion then
+            -- TODO: MATCH THIS BY KEY, NOT PROGRAM
             map_inverse = {
                 [instruments.snare] = {37,39},
                 [instruments.hi_hat] = {41,43,45},
@@ -75,20 +78,18 @@ function parseMIDI( str )
                 [instruments.bass] = {34,35},
                 [instruments.cymbal] = {48,50,51,54,57,58}
             }
-            
             fallback = instruments.hi_tom
         else
             map_inverse = {
-                [instruments.triangle_880] = {1},
+                --[instruments.triangle_880] = {1},
                 --[instruments.sine] = {40},
-                [instruments.piano] = {2,3,4,5,6,7},
-                [instruments.bass] = {32,33,34,35,36,37,38,39},
-                [instruments.cymbal] = {120},
+                [instruments.piano] = {0,1,2,3,4,5,6,7},
+                [instruments.hi_tom] = {32,33,34,35,36,37,38,39},
+                [instruments.cymbal] = {120,40},
                 [instruments.pwm_75] = {30},
-                [instruments.saw] = {29,40}
+                [instruments.saw] = {29}
             }
-            
-            fallback = instruments.saw
+            fallback = instruments.triangle
         end
         
         local map = {}
@@ -97,18 +98,26 @@ function parseMIDI( str )
               map[key] = instrument_path
             end
         end
+        map.default = fallback
         return map
     end
     
     local map = buildInstrumentMap(false)
-    local channel10map = buildInstrumentMap(true)
+    local percussionmap = buildInstrumentMap(true)
 
     local function getInstrumentFilePath(event)
         local program = event.param1
         
-        local key_to_instrument_map = map
-        if event.channel == 10 then key_to_instrument_map = channel10map end
-        event.instrument = key_to_instrument_map[program] or fallback
+        if forced_instrument then
+            event.instrument = forced_instrument
+        else
+            local key_to_instrument_map = map
+            if event.channel == 9 then
+                -- TODO: MATCH BY KEY, NOT PROGRAM
+                key_to_instrument_map = percussionmap
+            end
+            event.instrument = key_to_instrument_map[program] or key_to_instrument_map.default
+        end
         
         if event.instrument then
             print("SETTING INSTRUMENT",event.channel,event.instrument,program)
@@ -153,21 +162,30 @@ function parseMIDI( str )
     -- tempo calculator helper function
     local function tempo2ms( tempo )
         --return tempo/1000/parsed.ppqn
-        return 60000/parsed.ppqn/tempo
+        --return 60000/parsed.ppqn/(tempo/1000)
+        
+        --[[
+        local ticks_per_quarter = parsed.ppqn
+        local s_per_quarter = tempo
+        local s_per_tick = s_per_quarter / ticks_per_quater
+        local seconds_per_tick = s_per_tick / 1000000
+        ]]
+        
+        return (tempo / parsed.ppqn) / 1000
     end
     
     local tickmethod = band(tickdiv,0x4000)
     if tickmethod == 0 then -- metrical timing. bits 0-14 = pulses per quarter note, ppqn
         parsed.ppqn = band(tickdiv,0x3FFF)
         
-        local tempo = 120 -- default tempo of 120
+        local tempo = 120000 -- default tempo of 120
         parsed["ms"] = tempo2ms(tempo)
-        print("Tempo timing",parsed.ms)
+        --print("Tempo timing",parsed.ms)
     elseif tickmethod == 1 then -- absolute timing. bits 8-14 = frames per second. bits 0-7 = sub divisions per frame
         parsed["fps"] = rshift(band(tickdiv,0x7FFF),8)
         parsed["subdivisions"] = band(tickdiv,0xFF)
         parsed["ms"] = parsed["fps"] / parsed["subdivisions"]
-        print("Absolute timing",parsed.ms)
+        --print("Absolute timing",parsed.ms)
     end
 
     parsed["format"] = format

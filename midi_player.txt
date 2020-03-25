@@ -6,23 +6,44 @@
 require("midi_parser.txt")
 
 --local download = "http://www.theparticle.com/files/library/audio/doom/d_e1m1.mid" -- doom theme (sounds like ass)
---"https://upload.wikimedia.org/wikipedia/commons/5/55/MIDI_sample.mid"
+--local download = "https://upload.wikimedia.org/wikipedia/commons/5/55/MIDI_sample.mid"
 --local download = "https://bitmidi.com/uploads/85263.mid" -- pirates of the carribean (works kinda ok)
 --local download = "https://bitmidi.com/uploads/105034.mid" -- toto africa
 --local download = "https://bitmidi.com/uploads/91361.mid" -- darude (works well)
-local download = "https://bitmidi.com/uploads/72257.mid" -- mario theme
+--local download = "https://bitmidi.com/uploads/72257.mid" -- mario theme (works alright)
+--local download = "https://bitmidi.com/uploads/87390.mid" -- rickroll (eeeh)
+--local download = "https://bitmidi.com/uploads/4280.mid" -- Age of empires 2 title theme (sounds like ass)
+--local download = "https://bitmidi.com/uploads/68140.mid" -- zelda overworld theme
+--local download = "https://bitmidi.com/uploads/101128.mid" -- dragonborn theme (awesome)
+--local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat (sounds ehh, wrong instrument)
+--local download = "https://bitmidi.com/uploads/112953.mid" -- ganon's theme (sounds shit)
+--local download = "https://bitmidi.com/uploads/101518.mid" -- dragon roost island (sounds shit, might need implementation of key velocity to fix)
+--local download = "https://bitmidi.com/uploads/101561.mid" -- hyrule field twilight princess (sounds great)
+
+local download = "https://red.extra.tools/beach.mid" -- meme
+--local download = "https://red.extra.tools/heart.mid" -- titanic theme
+--local download = "https://bitmidi.com/uploads/85738.mid" -- pokemon elite four
+--local download = "https://bitmidi.com/uploads/85754.mid" -- pokemon center
+
+--local download = "https://bitmidi.com/uploads/110325.mid" -- mii channel
+--local download = "https://bitmidi.com/uploads/100444.mid" -- tetris
+
+--local forced_instrument = "sound/synth/tri.wav"
 
 local function doParse(str,callback)
     print("PARSING MIDI FILE")
     local co = coroutine.create( parseMIDI )
-    coroutine.resume( co, str )
+    coroutine.resume( co, str, forced_instrument )
     
     local function checkQ(n)
         return quotaAverage() < quotaMax()*n
     end
     
     hook.add("think","parseMIDI",function()
+        local iter = 0
         while checkQ(0.95) do
+            iter = iter + 1
+            if iter > 20 then break end
             local status, errmsg = coroutine.resume( co )
             
             if status == false then
@@ -58,6 +79,7 @@ local function playMIDI(parsed)
     print("Creating",num_per_channel,"sound channels per sound")
     local sound_channels = {}
     
+    local channel_pitches = {}
     local available_instruments = {}
     local instrument_status = {}
     local function addAvailableSound(path,snd)
@@ -76,7 +98,6 @@ local function playMIDI(parsed)
             isPlaying = false,
             soundDuration = length,
             finishPlaying = 0,
-            pitch_blend = 0,
             isLooped = isLooped
         }
     end
@@ -90,6 +111,10 @@ local function playMIDI(parsed)
             local status = instrument_status[snd]
             
             if status.isPlaying == false then
+                return snd
+            elseif status.isPlaying and timer.realtime() > status.finishPlaying then
+                snd:pause()
+                if not status.isLooped then snd:setTime(0) end
                 return snd
             end
             
@@ -183,28 +208,33 @@ local function playMIDI(parsed)
     
     local function playSound( channel, key, velocity )
         local path = getPathFromChannel(channel)
-        if not path then error("MIDI tried to use nonexistant sound channel '"..channel.."'") end
+        if not path then return end
+        --if not path then error("MIDI tried to use nonexistant sound channel '"..channel.."'") end
+        
+        local basefreq = 880
+        if string.find(path,"piano") == nil then basefreq = 880 end
             
-        local freq = key_to_freq[key] or 440
-        local pitchmult = freq / 400 -- this will do for now, may fix later
+        local freq = key_to_freq[key] or basefreq
+        local pitchmult = freq / basefreq -- this will do for now, may fix later
         
         local volume = velocity / 64
         
         local sound = getAvailableSound(path)
         sound:setPos(chip():getPos())
-        sound:setPitch(pitchmult + instrument_status[sound].pitch_blend)
+        sound:setPitch(pitchmult + (channel_pitches[channel] or 0))
         sound:setVolume(volume)
         sound:play()
         
         local status = instrument_status[sound]
-        status.finishPlaying = timer.realtime() + status.soundDuration
+        status.finishPlaying = timer.realtime() + status.soundDuration * (1/pitchmult) + 0.05
         status.isPlaying = true
         status.key = key
     end
     
     local function stopSound( channel, key )
         local path = getPathFromChannel(channel)
-        if not path then error("MIDI tried to use nonexistant sound channel '"..channel.."'") end
+        if not path then return end
+        --if not path then error("MIDI tried to use nonexistant sound channel '"..channel.."'") end
         
         local sound = getSoundByKey(path,key)
         if sound then
@@ -254,16 +284,12 @@ local function playMIDI(parsed)
             -- not used for now
         end,
         ["pitch blend"] = function(event)
-            local path = getPathFromChannel(event.channel)
-            if not path then error("MIDI tried to use nonexistant sound channel") end
-            for _,snd in pairs( available_instruments[path] ) do
-                snd:setPitch( event.param1 / 0x0040 )
-                instrument_status[snd].pitch_blend = event.param1 / 0x0040
-            end
+            --print("PITCH BLEND",event.param1/0x0040)
+            channel_pitches[event.channel] = event.param1 / 0x0040
         end,
         ["tempo"] = function(event)
             parsed.ms = event.new_ms
-            print("setting tempo",parsed.ms,event.param1)
+            --print("setting tempo, ms: "..parsed.ms..", tempo: "..event.param1..", ppqn: "..parsed.ppqn)
         end,
         ["end of track"] = function(event)
             -- nothing for now
@@ -272,6 +298,16 @@ local function playMIDI(parsed)
     
     proceed = function()
         timer.simple(0.5,function()
+            local nextEvents = {}
+            hook.add("think","playthink",function()
+                for i=#nextEvents,1,-1 do
+                    local event = nextEvents[i]
+                    if timer.realtime() >= event.processAt then
+                        event.callback()
+                        table.remove(nextEvents,i)
+                    end
+                end
+            end)
             local function playTrack(track,callback)
                 local index = 1
                 local function doEvent()
@@ -292,7 +328,10 @@ local function playMIDI(parsed)
                             
                             index = index + 1
                         else
-                            timer.simple( parsed.ms * event.deltatime / 1000, doEvent )
+                            nextEvents[#nextEvents+1] = {
+                                processAt = timer.realtime() + parsed.ms * event.deltatime / 1000,
+                                callback = doEvent
+                            }
                             event.deltatime = 0
                             return
                         end
@@ -306,16 +345,19 @@ local function playMIDI(parsed)
                 print("format is 0, playing 1st track")
                 playTrack(parsed.tracks[1],function()
                     print("DONE PLAYING!")
+                    hook.remove("think","playthink")
                 end)    
             elseif format == 1 then -- several tracks, and first tracks contains all tempos
                 print("format is 1, playing all tracks simultaneously")
                 local played = 0
                 for i=1,#parsed.tracks do
+                    --if i==9 then continue end
                     played = played + 1
                     playTrack(parsed.tracks[i],function()
                         played = played - 1
                         if played == 0 then
                             print("DONE PLAYING!")
+                            hook.remove("think","playthink")
                         end
                     end)
                 end
@@ -331,6 +373,7 @@ local function playMIDI(parsed)
                         end)
                     else
                         print("DONE PLAYING!")
+                        hook.remove("think","playthink")
                     end
                 end
                 playNext()
