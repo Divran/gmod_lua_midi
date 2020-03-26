@@ -37,7 +37,7 @@ end
 
 local my_ip = "http://81.237.238.124/"
 --local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeLostWoodsTheme.mid"
---local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- needs instrument adjustment
+local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- needs instrument adjustment
 --local download = my_ip .. "midi/Firefly.mid"
 --local download = my_ip .. "midi/TVThemesFriends.mid"
 --local download = my_ip .. "midi/MissionImpossible88.mid"
@@ -263,6 +263,8 @@ local function playMIDI(parsed)
             
         local freq = key_to_freq[key] or basefreq
         local pitchmult = freq / basefreq -- this will do for now, may fix later
+        
+        if channel == 9 then pitchmult = 1 end
         
         local volume = velocity / 64
         

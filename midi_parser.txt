@@ -229,6 +229,7 @@ function parseMIDI( str, forced_instrument )
                     if e.channel ~= 9 then
                         getInstrumentFilePath(e)
                         channel_instruments[e.channel] = e.instrument
+                        print("SETTING INSTRUMENT (a)",e.channel,e.instrument,e.param1)
                     end
                 elseif command == 0xD0 then -- Channel pressure
                     e["command"] = "channel pressure"
