@@ -27,7 +27,7 @@ end
 --local download = "https://bitmidi.com/uploads/79829.mid" -- better rickroll
 --local download = "https://bitmidi.com/uploads/4280.mid" -- Age of empires 2 title theme (sounds like ass)
 --local download = "https://bitmidi.com/uploads/101128.mid" -- dragonborn theme (awesome)
---local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat
+local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat
 
 -- zelda
 --local download = "https://bitmidi.com/uploads/68140.mid" -- zelda overworld theme
@@ -37,7 +37,7 @@ end
 
 local my_ip = "<ip to server with midi files here>"
 --local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeLostWoodsTheme.mid"
-local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- needs instrument adjustment
+--local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- needs instrument adjustment
 --local download = my_ip .. "midi/Firefly.mid"
 --local download = my_ip .. "midi/TVThemesFriends.mid"
 --local download = my_ip .. "midi/MissionImpossible88.mid"
@@ -49,9 +49,14 @@ local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- nee
 --local download = my_ip .. "midi/Countdown.mid"
 --local download = my_ip .. "midi/Countdown_StephenWillis.mid"
 --local download = my_ip .. "midi/dragonforce_fireflames.mid"
---local download = my_ip .. "midi/zelda/ZeldaTwilightPrincessKakarikoVillage.mid"
+local download = my_ip .. "midi/zelda/ZeldaTwilightPrincessKakarikoVillage.mid"
 --local download = my_ip .. "midi/Quadran__Unlovable_MIKE_Remix__Scapiro_20071019234433.mid"
+--local download = my_ip .. "midi/mortal.mid"
+--local download = my_ip .. "midi/ELO_Mr_Blue_Sky.mid"
 
+--local download = my_ip .. "midi/sixmax/ultranumb.txt"
+
+--local download = my_ip .. "midi/RushB.mid"
 
 --local download = "https://red.extra.tools/beach.mid" -- meme
 --local download = "https://red.extra.tools/heart.mid" -- titanic theme
@@ -64,7 +69,8 @@ local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- nee
 --local download = "https://freemidi.org/getter-24773" -- free bird
 
 --local forced_instrument = "sound/synth/tri.wav"
-local base_frequency = 900 -- 880
+local base_frequency = 880 -- 880
+local VOLUME_ADJUST = 0.3
 
 local function doParse(str,callback)
     changeName("Parsing MIDI file")
@@ -266,7 +272,7 @@ local function playMIDI(parsed)
         
         if channel == 9 then pitchmult = 1 end
         
-        local volume = velocity / 64
+        local volume = (velocity / 64) * VOLUME_ADJUST
         
         local sound = getAvailableSound(path)
         sound:setPos(chip():getPos())
