@@ -68,7 +68,7 @@ function parseMIDI( str, forced_instrument )
         local instrument = event.instrument
         if not instrument then instrument = channel_instruments[event.channel] end
         if not instrument then return end
-    
+        
         instrument_amt_playing[instrument] = 
             (instrument_amt_playing[instrument] or 0) - 1
             
@@ -158,6 +158,9 @@ function parseMIDI( str, forced_instrument )
     parsed["format"] = format
     parsed["instruments"] = {}
     parsed["tracks"] = {}
+    parsed.accuracy_ms = timer.frametime() * 900 -- 90% of current fps in miliseconds
+    parsed.average_ms = parsed.ms
+    parsed.smallest_deltatime = 9999999
 
     -- check tracks
     local running = false
@@ -170,13 +173,14 @@ function parseMIDI( str, forced_instrument )
         local track_end = filepos + track_length
 
         local track = {}
-
         local parsed_index = 1
 
         -- decode this track
         while filepos < track_end - 1 do
             local deltatime = variableLengthNumber(str)
             local event = byte(get(str))
+            
+            parsed.accuracy_ms = parsed.accuracy_ms * 0.5 + (timer.frametime() * 900) * 0.5
 
             --print("filepos",filepos,str:sub(filepos,filepos+20))
 
@@ -206,6 +210,10 @@ function parseMIDI( str, forced_instrument )
                         --print("SETTING INSTRUMENT (c)",e.channel,e.instrument,e.param1)
                     end
                     stopSound(e)
+                    
+                    if deltatime > 0 then
+                        parsed.smallest_deltatime = math.min(parsed.smallest_deltatime,deltatime)
+                    end
                 elseif command == 0x90 then -- Note on
                     e["command"] = "note on"
                     e["param2"] = byte(get(str))
@@ -214,9 +222,13 @@ function parseMIDI( str, forced_instrument )
                         --print("SETTING INSTRUMENT (b)",e.channel,e.instrument,e.param1)
                     end
                     if e.param2 == 0 then
-                        stopSound(e)
+                        stopSound(e,current_time)
                     else
-                        playSound(e)
+                        playSound(e,current_time)
+                    end
+                    
+                    if deltatime > 0 then
+                        parsed.smallest_deltatime = math.min(parsed.smallest_deltatime,deltatime)
                     end
                 elseif command == 0xA0 then -- Polyphonic pressure
                     e["command"] = "polyphonic pressure"
@@ -250,14 +262,22 @@ function parseMIDI( str, forced_instrument )
                     
                     if tickmethod == 0 then
                         local tempo = get(str,3,true)
+                        
+                        local new_ms = tempo2ms(tempo)
                     
                         track[parsed_index] = {
                             deltatime = deltatime,
                             command = "tempo",
-                            param1 = tempo
+                            param1 = tempo,
+                            new_ms = new_ms
                         }
-                        track[parsed_index].new_ms = tempo2ms(tempo)
                         parsed_index = parsed_index + 1
+                        
+                        -- only take into account the changed timing when the jump isn't too large
+                        -- because we assume the larger timings are in silent-ish periods of the song
+                        if new_ms < parsed.average_ms * 2 then
+                            parsed.average_ms = parsed.average_ms * 0.5 + new_ms * 0.5
+                        end
                     else
                         get(str,3) -- read and forget data to move filepos
                     end

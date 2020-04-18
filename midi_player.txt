@@ -27,7 +27,7 @@ end
 --local download = "https://bitmidi.com/uploads/79829.mid" -- better rickroll
 --local download = "https://bitmidi.com/uploads/4280.mid" -- Age of empires 2 title theme (sounds like ass)
 --local download = "https://bitmidi.com/uploads/101128.mid" -- dragonborn theme (awesome)
-local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat
+--local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat
 
 -- zelda
 --local download = "https://bitmidi.com/uploads/68140.mid" -- zelda overworld theme
@@ -35,7 +35,7 @@ local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat
 --local download = "https://bitmidi.com/uploads/101518.mid" -- dragon roost island (sounds shit, might need implementation of key velocity to fix)
 --local download = "https://bitmidi.com/uploads/101561.mid" -- hyrule field twilight princess (sounds great)
 
-local my_ip = "<ip to server with midi files here>"
+local my_ip = "http://81.237.238.124/"
 --local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeLostWoodsTheme.mid"
 --local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- needs instrument adjustment
 --local download = my_ip .. "midi/Firefly.mid"
@@ -49,28 +49,32 @@ local my_ip = "<ip to server with midi files here>"
 --local download = my_ip .. "midi/Countdown.mid"
 --local download = my_ip .. "midi/Countdown_StephenWillis.mid"
 --local download = my_ip .. "midi/dragonforce_fireflames.mid"
-local download = my_ip .. "midi/zelda/ZeldaTwilightPrincessKakarikoVillage.mid"
---local download = my_ip .. "midi/Quadran__Unlovable_MIKE_Remix__Scapiro_20071019234433.mid"
+--local download = my_ip .. "midi/zelda/ZeldaTwilightPrincessKakarikoVillage.mid"
+--local download = my_ip .. "midi/Quadran__Unlovable_MIKE_Remix__Scapiro_20071019234433.mid" -- excellent, freq 880
 --local download = my_ip .. "midi/mortal.mid"
---local download = my_ip .. "midi/ELO_Mr_Blue_Sky.mid"
+local download = my_ip .. "midi/ELO_Mr_Blue_Sky.mid"
+--local download = my_ip .. "midi/DrWho.mid"
+--local download = my_ip .. "midi/Thunder_Struck.mid" -- may need instrument adjustment, freq 880
 
---local download = my_ip .. "midi/sixmax/ultranumb.txt"
+--local download = my_ip .. "midi/sixmax/90s.txt" -- very good, freq 880
 
---local download = my_ip .. "midi/RushB.mid"
+-- BLACK MIDI
+--local download = my_ip .. "midi/RushB.mid" -- freq 600
+--local download = my_ip .. "midi/deathwaltz.mid"
 
---local download = "https://red.extra.tools/beach.mid" -- meme
---local download = "https://red.extra.tools/heart.mid" -- titanic theme
+--local download = "http://extra.tools/midi/beach.mid" -- meme, freq 880
+--local download = "http://extra.tools/midi/heart.mid" -- titanic theme
 --local download = "https://bitmidi.com/uploads/85738.mid" -- pokemon elite four
 --local download = "https://bitmidi.com/uploads/85754.mid" -- pokemon center
 
---local download = "https://bitmidi.com/uploads/110325.mid" -- mii channel
+--local download = "https://bitmidi.com/uploads/110325.mid" -- mii channel, freq 880
 --local download = "https://bitmidi.com/uploads/100444.mid" -- tetris
-
---local download = "https://freemidi.org/getter-24773" -- free bird
 
 --local forced_instrument = "sound/synth/tri.wav"
 local base_frequency = 880 -- 880
-local VOLUME_ADJUST = 0.3
+local VOLUME_ADJUST = 0.5
+local BLACK_MIDI = false
+local MAX_BLACK_MIDI_PER_INSTR = 4000
 
 local function doParse(str,callback)
     changeName("Parsing MIDI file")
@@ -85,7 +89,7 @@ local function doParse(str,callback)
         local iter = 0
         while checkQ(0.95) do
             iter = iter + 1
-            if iter > 20 then break end
+            if iter > 80 then break end
             local status, errmsg = coroutine.resume( co )
             
             if status == false then
@@ -182,17 +186,37 @@ local function playMIDI(parsed)
         return sound_channels[channel]
     end
     
+    local is_black_midi = false
+    if BLACK_MIDI and parsed.accuracy_ms > parsed.average_ms * parsed.smallest_deltatime then
+        print("BLACK MIDI DETECTED!",
+            "Accuracy",math.floor(parsed.accuracy_ms*10)/10,
+            "Average timing (ms)",parsed.average_ms,
+            "Smallest deltatime",parsed.smallest_deltatime,
+            "Required accuracy",math.floor(parsed.average_ms * parsed.smallest_deltatime * 10)/10
+        )
+        is_black_midi = true
+    end
+    
     local loading = 0
+    local load_delay = 0.05
     local proceed
     changeName("Loading sound channels")
     for instrument, num_per_instrument in pairs( parsed.instruments ) do
-        for i=1,num_per_instrument do
-            loading = loading + 1
-            wait = wait + 0.05
-            timer.simple(wait,function()
-                changeName("Loading " .. num_per_instrument.."x '"..instrument.."'")
-                --bass.loadFile( instrument, "noplay noblock", function(snd,err,b)
-                bass.loadURL( instrument, "noplay noblock", function(snd,err,b)
+        
+        if is_black_midi then
+            num_per_instrument = math.min(MAX_BLACK_MIDI_PER_INSTR,math.floor(num_per_instrument * (parsed.accuracy_ms / parsed.ms)))
+            load_delay = 0.05
+        end
+        
+        loading = loading + num_per_instrument
+        
+        timer.simple(wait,function()
+            local idx = 0
+            timer.create( "loadInstrument_"..instrument, load_delay, num_per_instrument, function()
+                idx = idx + 1
+                changeName("Loading " .. idx .. "/" .. num_per_instrument.." of '"..instrument.."'")
+                
+                local function cb(snd,err,b)
                     if err ~= 0 then
                         changeName("unable to load sound '"..instrument.."'")
                         print("sound error:",err,b)
@@ -205,9 +229,17 @@ local function playMIDI(parsed)
                         changeName("Done loading!")
                         proceed() 
                     end
-                end )
+                end
+                
+                if string.find(instrument,"http") then
+                    bass.loadURL( instrument, "noplay noblock", cb )
+                else
+                    bass.loadFile( instrument, "noplay noblock", cb )
+                end
             end)
-        end
+        end)
+        
+        wait = wait + load_delay * (num_per_instrument+2)
     end
     
     local function createSound( channel, path )
