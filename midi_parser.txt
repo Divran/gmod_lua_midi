@@ -26,6 +26,7 @@ function parseMIDI( str, forced_instrument )
     local band = bit.band
     local lshift = bit.lshift
     local rshift = bit.rshift
+    local bor = bit.bor
     local parsed = {}
 
     local parse = {
@@ -146,21 +147,24 @@ function parseMIDI( str, forced_instrument )
         parsed.ppqn = band(tickdiv,0x3FFF)
         
         local tempo = 120000 -- default tempo of 120
-        parsed["ms"] = tempo2ms(tempo)
-        --print("Tempo timing",parsed.ms)
+        parsed.ms = tempo2ms(tempo)
+        print("Tempo timing",parsed.ms)
     elseif tickmethod == 1 then -- absolute timing. bits 8-14 = frames per second. bits 0-7 = sub divisions per frame
-        parsed["fps"] = rshift(band(tickdiv,0x7FFF),8)
-        parsed["subdivisions"] = band(tickdiv,0xFF)
-        parsed["ms"] = parsed["fps"] / parsed["subdivisions"]
-        --print("Absolute timing",parsed.ms)
+        parsed.fps = rshift(band(tickdiv,0x7FFF),8)
+        parsed.subdivisions = band(tickdiv,0xFF)
+        parsed.ms = parsed.fps / parsed.subdivisions
+        print("Absolute timing",parsed.ms)
     end
 
-    parsed["format"] = format
-    parsed["instruments"] = {}
-    parsed["tracks"] = {}
+    parsed.format = format
+    parsed.instruments = {}
+    parsed.tracks = {}
     parsed.accuracy_ms = timer.frametime() * 900 -- 90% of current fps in miliseconds
     parsed.average_ms = parsed.ms
     parsed.smallest_deltatime = 9999999
+    parsed.playtime = 0
+    
+    local tempo_queue = {}
 
     -- check tracks
     local running = false
@@ -174,6 +178,9 @@ function parseMIDI( str, forced_instrument )
 
         local track = {}
         local parsed_index = 1
+        local playtime = 0
+        local current_ms = parsed.ms
+        local tempo_queue_index = 1
 
         -- decode this track
         while filepos < track_end - 1 do
@@ -181,6 +188,16 @@ function parseMIDI( str, forced_instrument )
             local event = byte(get(str))
             
             parsed.accuracy_ms = parsed.accuracy_ms * 0.5 + (timer.frametime() * 900) * 0.5
+            
+            -- calculate playtime
+            local tempo_queue_item = tempo_queue[tempo_queue_index]
+            if tempo_queue_item then
+                if playtime >= tempo_queue_item.processAt then
+                    tempo_queue_index = tempo_queue_index + 1
+                    current_ms = tempo_queue_item.new_ms
+                end
+            end
+            playtime = playtime + current_ms * deltatime / 1000
 
             --print("filepos",filepos,str:sub(filepos,filepos+20))
 
@@ -245,10 +262,10 @@ function parseMIDI( str, forced_instrument )
                     end
                 elseif command == 0xD0 then -- Channel pressure
                     e["command"] = "channel pressure"
-                elseif command == 0xE0 then -- Pitch blend
-                    e["command"] = "pitch blend"
+                elseif command == 0xE0 then -- Pitch bend
+                    e["command"] = "pitch bend"
                     local param2 = byte(get(str))
-                    e["param2"] = 128 * param2 + e.param1 - 8192
+                    e["param2"] = bor(lshift(param2,7),e.param1) --128 * param2 + e.param1 - 8192
                 end
 
                 track[parsed_index] = e
@@ -277,6 +294,23 @@ function parseMIDI( str, forced_instrument )
                         -- because we assume the larger timings are in silent-ish periods of the song
                         if new_ms < parsed.average_ms * 2 then
                             parsed.average_ms = parsed.average_ms * 0.5 + new_ms * 0.5
+                        end
+                        
+                        current_ms = new_ms
+                        if #tempo_queue == 0 then
+                            tempo_queue[1] = {
+                                processAt=playtime,
+                                new_ms=new_ms
+                            }
+                        else
+                            for i=#tempo_queue,1,-1 do
+                                if tempo_queue[i].processAt > playtime then
+                                    table.insert(tempo_queue,i,{
+                                        processAt=playtime,
+                                        new_ms=new_ms
+                                    })
+                                end
+                            end
                         end
                     else
                         get(str,3) -- read and forget data to move filepos
@@ -325,7 +359,14 @@ function parseMIDI( str, forced_instrument )
 
         -- override filepos with correct position
         filepos = track_end
-        parsed["tracks"][#parsed["tracks"]+1] = track
+        parsed.tracks[#parsed.tracks+1] = track
+        
+        if format == 0 or format == 2 then
+            parsed.playtime = parsed.playtime + playtime
+        else
+            parsed.playtime = math.max(parsed.playtime,playtime)
+        end
+        
         coroutine.yield() -- yield once after each track
     end
 

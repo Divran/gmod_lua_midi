@@ -17,25 +17,41 @@ local function changeName(str)
     setName(name .. "\n\n" .. str)
 end
 
+local base_frequency = 880 -- 880
+local my_ip = "http://<ip>"
+
 --local download = "http://www.theparticle.com/files/library/audio/doom/d_e1m1.mid" -- doom theme
 --local download = "https://upload.wikimedia.org/wikipedia/commons/5/55/MIDI_sample.mid"
 --local download = "https://bitmidi.com/uploads/85263.mid" -- pirates of the carribean
---local download = "https://bitmidi.com/uploads/105034.mid" -- toto africa
---local download = "https://bitmidi.com/uploads/91361.mid" -- darude (works well)
+--local download, base_frequency = "https://bitmidi.com/uploads/105034.mid", 440 -- toto africa
+--local download, base_frequency = "https://bitmidi.com/uploads/91361.mid", 880 -- darude (works well, might need instrument adjustment)
 --local download = "https://bitmidi.com/uploads/72257.mid" -- mario theme (works alright)
---local download = "https://bitmidi.com/uploads/87390.mid" -- rickroll (eeeh)
 --local download = "https://bitmidi.com/uploads/79829.mid" -- better rickroll
 --local download = "https://bitmidi.com/uploads/4280.mid" -- Age of empires 2 title theme (sounds like ass)
---local download = "https://bitmidi.com/uploads/101128.mid" -- dragonborn theme (awesome)
+--local download, base_frequency = "https://bitmidi.com/uploads/101128.mid", 440 -- dragonborn theme (awesome)
 --local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat
 
 -- zelda
 --local download = "https://bitmidi.com/uploads/68140.mid" -- zelda overworld theme
 --local download = "https://bitmidi.com/uploads/112953.mid" -- ganon's theme
 --local download = "https://bitmidi.com/uploads/101518.mid" -- dragon roost island (sounds shit, might need implementation of key velocity to fix)
---local download = "https://bitmidi.com/uploads/101561.mid" -- hyrule field twilight princess (sounds great)
 
-local my_ip = "<server ip/url>"
+--local download, base_frequency = "https://bitmidi.com/uploads/101561.mid", 493 -- hyrule field twilight princess (sounds great)
+--local download, base_frequency = my_ip .. "midi/zelda/ZeldaTwilightPrincessHyruleField.mid", 600 -- other version hyrule field twilight princess
+--local download, base_frequency = my_ip .. "midi/zelda/ZeldaTwilightPrincessInsideaHouse.mid", 500
+--local download, base_frequency = my_ip .. "midi/zelda/ZeldaTwilightPrincessHiddenVillage.mid", 500
+--local download, base_frequency = my_ip .. "midi/zelda/ZeldasAdventureOverworld.mid", 493 -- excellent
+--local download, base_frequency = my_ip .. "midi/morezelda/The_Legend_of_Zelda_A_Link_Between_Worlds____Lorule_Castle.mid", 493 -- pretty great
+--local download, base_frequency = my_ip .. "midi/morezelda/The_Legend_of_Zelda_Links_Awakening____Tal_Tal_Heights.mid", 493
+
+local download, base_frequency = my_ip .. "midi/morezelda/The_Legend_of_Zelda_The_Wind_Waker____Dragon_Roost_Island.mid", 700
+
+
+--local download, base_frequency = my_ip .. "midi/pokemon/Pokemon_RedBlueYellow____Wild_Pokemon_Battle.mid", 493
+--local download, base_frequency = my_ip .. "midi/pokemon/Pokemon_RedBlueYellow____Trainer_Battle.mid", 600
+
+
+
 --local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeLostWoodsTheme.mid"
 --local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- needs instrument adjustment
 --local download = my_ip .. "midi/Firefly.mid"
@@ -45,34 +61,35 @@ local my_ip = "<server ip/url>"
 --local download = my_ip .. "midi/Jeopardy.mid"
 --local download = my_ip .. "midi/Pingu.mid"
 --local download = my_ip .. "midi/Pokemon_2.mid"
---local download = my_ip .. "midi/Seinfeld.mid" -- freq ~300
+--local download, base_frequency = my_ip .. "midi/Seinfeld.mid", 300 -- freq ~300
 --local download = my_ip .. "midi/Countdown.mid"
 --local download = my_ip .. "midi/Countdown_StephenWillis.mid"
 --local download = my_ip .. "midi/dragonforce_fireflames.mid"
 --local download = my_ip .. "midi/zelda/ZeldaTwilightPrincessKakarikoVillage.mid"
---local download = my_ip .. "midi/Quadran__Unlovable_MIKE_Remix__Scapiro_20071019234433.mid" -- excellent, freq 880
---local download = my_ip .. "midi/mortal.mid"
-local download = my_ip .. "midi/ELO_Mr_Blue_Sky.mid"
+--local download, base_frequency = my_ip .. "midi/Quadran__Unlovable_MIKE_Remix__Scapiro_20071019234433.mid", 880 -- excellent
+--local download,base_frequency = my_ip .. "midi/mortal.mid", 880 -- excellent
+--local download = my_ip .. "midi/ELO_Mr_Blue_Sky.mid"
 --local download = my_ip .. "midi/DrWho.mid"
 --local download = my_ip .. "midi/Thunder_Struck.mid" -- may need instrument adjustment, freq 880
 
---local download = my_ip .. "midi/sixmax/90s.txt" -- very good, freq 880
+--local download, base_frequency = my_ip .. "midi/sixmax/90s.txt", 880 -- very good, freq 880
+--local download = my_ip .. "midi/sixmax/cynthia2.txt"
+--local download = my_ip .. "midi/sixmax/dsmn.mid"
 
 -- BLACK MIDI
---local download = my_ip .. "midi/RushB.mid" -- freq 600
---local download = my_ip .. "midi/deathwaltz.mid"
+--local download, base_frequency = my_ip .. "midi/RushB.mid", 600 -- freq 600
+--local download, base_frequency = my_ip .. "midi/deathwaltz.mid", 880 -- freq 880
 
---local download = "http://extra.tools/midi/beach.mid" -- meme, freq 880
+--local download, base_frequency = "http://extra.tools/midi/beach.mid", 880 -- meme, freq 880
 --local download = "http://extra.tools/midi/heart.mid" -- titanic theme
 --local download = "https://bitmidi.com/uploads/85738.mid" -- pokemon elite four
 --local download = "https://bitmidi.com/uploads/85754.mid" -- pokemon center
 
---local download = "https://bitmidi.com/uploads/110325.mid" -- mii channel, freq 880
+--local download, base_frequency = "https://bitmidi.com/uploads/110325.mid", 880 -- mii channel, freq 880
 --local download = "https://bitmidi.com/uploads/100444.mid" -- tetris
 
 --local forced_instrument = "sound/synth/tri.wav"
-local base_frequency = 880 -- 880
-local VOLUME_ADJUST = 0.5
+local VOLUME_ADJUST = 0.25
 local BLACK_MIDI = false
 local MAX_BLACK_MIDI_PER_INSTR = 4000
 
@@ -126,6 +143,7 @@ local function playMIDI(parsed)
     local sound_channels = {}
     
     local channel_pitches = {}
+    
     local available_instruments = {}
     local instrument_status = {}
     local function addAvailableSound(path,snd)
@@ -306,13 +324,17 @@ local function playMIDI(parsed)
         
         local volume = (velocity / 64) * VOLUME_ADJUST
         
+        local pitch_bend = channel_pitches[channel] or 1
+        
         local sound = getAvailableSound(path)
         sound:setPos(chip():getPos())
-        sound:setPitch(pitchmult + (channel_pitches[channel] or 0))
+        sound:setPitch(pitchmult * pitch_bend)
         sound:setVolume(volume)
         sound:play()
         
         local status = instrument_status[sound]
+        status.channel = channel
+        status.pitchmult = pitchmult
         status.finishPlaying = timer.realtime() + status.soundDuration * (1/pitchmult) + 0.05
         status.isPlaying = true
         status.key = key
@@ -340,9 +362,11 @@ local function playMIDI(parsed)
             status.isPlaying = false
             status.key = false
             
-            sound:pause()
-            if not sound.isLooped then 
-                sound:setTime(0)
+            if event.channel ~= 9 then
+                sound:pause()
+                if not sound.isLooped then 
+                    sound:setTime(0)
+                end
             end
         end
     end
@@ -354,7 +378,7 @@ local function playMIDI(parsed)
             if velocity == 0 then
                 stopSound( event )
             else
-                playSound( event  )
+                playSound( event )
             end
         end,
         ["note off"] = stopSound,
@@ -372,9 +396,17 @@ local function playMIDI(parsed)
         ["channel pressure"] = function(event)
             -- not used for now
         end,
-        ["pitch blend"] = function(event)
-            --print("PITCH BLEND",event.param1/0x0040)
-            channel_pitches[event.channel] = event.param1 / 0x0040
+        ["pitch bend"] = function(event)
+            --print("PITCH BEND",event.param2)
+            local pitch_bend = event.param2 or 8192
+            pitch_bend = 2 ^ ((((pitch_bend-8192) / 8192) * 2) / 12)
+            
+            channel_pitches[event.channel] = pitch_bend
+            for sound, status in pairs( instrument_status ) do
+                if status.isPlaying == true and status.channel == event.channel then
+                    sound:setPitch(status.pitchmult * pitch_bend)
+                end
+            end
         end,
         ["tempo"] = function(event)
             parsed.ms = event.new_ms
@@ -388,7 +420,30 @@ local function playMIDI(parsed)
     proceed = function()
         timer.simple(0.1,function()
             local nextEvents = {}
+            name = ""
+            addName("Playing '"..download.."'!")
+            local start_play = timer.realtime()
+            
+            local function printableTime(seconds)
+                local time_left = math.ceil(seconds)
+                local mins = math.floor(time_left / 60)
+                local secs = math.floor(time_left % 60)
+                return string.format("%02d:%02d",mins,secs)
+            end
+            local total_time_printable = printableTime(parsed.playtime)
+            local nextupdate = timer.realtime() + 1
+            
             hook.add("think","playthink",function()
+                local curtime = timer.realtime()
+                if nextupdate > curtime then
+                    nextupdate = curtime + 1
+                    local progress = (curtime - start_play) / parsed.playtime
+                    changeName("Playing! " .. 
+                                math.floor(progress*100) .. "%, " ..
+                                printableTime(parsed.playtime * progress) .. "/" ..
+                                total_time_printable )
+                end
+                
                 for i=#nextEvents,1,-1 do
                     local event = nextEvents[i]
                     if timer.realtime() >= event.processAt then
