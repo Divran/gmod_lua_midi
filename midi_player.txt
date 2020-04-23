@@ -18,20 +18,10 @@ local function changeName(str)
 end
 
 local base_frequency = 880 -- 880
-local my_ip = "http://<ip>"
+local my_ip = "http://81.237.238.124/"
 
---local download = "http://www.theparticle.com/files/library/audio/doom/d_e1m1.mid" -- doom theme
---local download = "https://upload.wikimedia.org/wikipedia/commons/5/55/MIDI_sample.mid"
---local download = "https://bitmidi.com/uploads/85263.mid" -- pirates of the carribean
---local download, base_frequency = "https://bitmidi.com/uploads/105034.mid", 440 -- toto africa
---local download, base_frequency = "https://bitmidi.com/uploads/91361.mid", 880 -- darude (works well, might need instrument adjustment)
---local download = "https://bitmidi.com/uploads/72257.mid" -- mario theme (works alright)
---local download = "https://bitmidi.com/uploads/79829.mid" -- better rickroll
---local download = "https://bitmidi.com/uploads/4280.mid" -- Age of empires 2 title theme (sounds like ass)
---local download, base_frequency = "https://bitmidi.com/uploads/101128.mid", 440 -- dragonborn theme (awesome)
---local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat
 
--- zelda
+------------- ZELDA
 --local download = "https://bitmidi.com/uploads/68140.mid" -- zelda overworld theme
 --local download = "https://bitmidi.com/uploads/112953.mid" -- ganon's theme
 --local download = "https://bitmidi.com/uploads/101518.mid" -- dragon roost island (sounds shit, might need implementation of key velocity to fix)
@@ -44,35 +34,74 @@ local my_ip = "http://<ip>"
 --local download, base_frequency = my_ip .. "midi/morezelda/The_Legend_of_Zelda_A_Link_Between_Worlds____Lorule_Castle.mid", 493 -- pretty great
 --local download, base_frequency = my_ip .. "midi/morezelda/The_Legend_of_Zelda_Links_Awakening____Tal_Tal_Heights.mid", 493
 
-local download, base_frequency = my_ip .. "midi/morezelda/The_Legend_of_Zelda_The_Wind_Waker____Dragon_Roost_Island.mid", 700
+--local download, base_frequency = my_ip .. "midi/morezelda/The_Legend_of_Zelda_The_Wind_Waker____Dragon_Roost_Island.mid", 700
+--local download, base_frequency = my_ip .. "midi/morezelda/The_Legend_of_Zelda_The_Wind_Waker____Great_Sea.mid", 880
+--local download, base_frequency = my_ip .. "midi/morezelda/The_Legend_of_Zelda_Twilight_Princess____Hidden_Village.mid", 440
 
 
---local download, base_frequency = my_ip .. "midi/pokemon/Pokemon_RedBlueYellow____Wild_Pokemon_Battle.mid", 493
---local download, base_frequency = my_ip .. "midi/pokemon/Pokemon_RedBlueYellow____Trainer_Battle.mid", 600
-
-
-
+--local download = my_ip .. "midi/zelda/ZeldaTwilightPrincessKakarikoVillage.mid"
 --local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeLostWoodsTheme.mid"
 --local download = my_ip .. "midi/zelda/ZeldaOcarinaofTimeGerudoValley.mid" -- needs instrument adjustment
+
+------------- POKEMON
+--local download = "https://bitmidi.com/uploads/85738.mid" -- pokemon elite four
+--local download = "https://bitmidi.com/uploads/85754.mid" -- pokemon center
+--local download, base_frequency = my_ip .. "midi/pokemon/Pokemon_RedBlueYellow____Wild_Pokemon_Battle.mid", 493
+--local download, base_frequency = my_ip .. "midi/pokemon/Pokemon_RedBlueYellow____Trainer_Battle.mid", 600
+--local download = my_ip .. "midi/Pokemon_2.mid"
+
+------------- MARIO
+--local download = "https://bitmidi.com/uploads/72257.mid" -- mario theme (works alright)
+--local download = my_ip .. "midi/mario/Marioflying.mid"
+--local download, base_frequency = my_ip .. "midi/mario/Mariometal.mid", 900
+--local download = my_ip .. "midi/mario/mario.mid"
+--local download, base_frequency = my_ip .. "midi/mario/Super_Mario____Castle.mid", 400
+
+--local download, base_frequency = my_ip .. "midi/smashbros/Super_Smash_Bros_Melee____Menu.mid", 493
+
+
+------------- OTHER
+--local download, base_frequency = my_ip .. "midi/Calvin_Harris_Blame_cprato.com.mid", 880 -- short but good
+--local download = my_ip .. "midi/Queen_Bohemian_Rhapsody.mid"
+--local download = my_ip .. "midi/BackInBlack.mid"
+--local download, base_frequency = my_ip .. "midi/SCATMAN.MID", 880 -- pretty good
+--local download, base_frequency = my_ip .. "midi/ScatmansWorld2.mid", 880
+--local download = my_ip .. "midi/dragonforce_fireflames.mid"
+--local download, base_frequency = my_ip .. "midi/Quadran__Unlovable_MIKE_Remix__Scapiro_20071019234433.mid", 880 -- excellent
+--local download = my_ip .. "midi/ELO_Mr_Blue_Sky.mid"
+--local download = my_ip .. "midi/Thunder_Struck.mid" -- may need instrument adjustment, freq 880
+--local download, base_frequency = my_ip .. "midi/sixmax/90s.txt", 880 -- very good, freq 880
+--local download, base_frequency = "https://bitmidi.com/uploads/110325.mid", 880 -- mii channel, freq 880
+--local download = "https://bitmidi.com/uploads/79829.mid" -- better rickroll
+--local download, base_frequency = "https://bitmidi.com/uploads/105034.mid", 440 -- toto africa
+--local download, base_frequency = "https://bitmidi.com/uploads/91361.mid", 880 -- darude (works well, might need instrument adjustment)
+--local download, base_frequency = my_ip .. "midi/SmashmouthAllStar.mid",880
+
+------------- SAM
+--local download = "http://extra.tools/midi/heart.mid" -- titanic theme
+--local download, base_frequency = "http://extra.tools/midi/beach.mid", 880 -- meme, freq 880
+
+------------- TV SHOWS
 --local download = my_ip .. "midi/Firefly.mid"
 --local download = my_ip .. "midi/TVThemesFriends.mid"
 --local download = my_ip .. "midi/MissionImpossible88.mid"
 --local download = my_ip .. "midi/Family_Guy_Theme_Score.mid"
 --local download = my_ip .. "midi/Jeopardy.mid"
 --local download = my_ip .. "midi/Pingu.mid"
---local download = my_ip .. "midi/Pokemon_2.mid"
 --local download, base_frequency = my_ip .. "midi/Seinfeld.mid", 300 -- freq ~300
 --local download = my_ip .. "midi/Countdown.mid"
 --local download = my_ip .. "midi/Countdown_StephenWillis.mid"
---local download = my_ip .. "midi/dragonforce_fireflames.mid"
---local download = my_ip .. "midi/zelda/ZeldaTwilightPrincessKakarikoVillage.mid"
---local download, base_frequency = my_ip .. "midi/Quadran__Unlovable_MIKE_Remix__Scapiro_20071019234433.mid", 880 -- excellent
---local download,base_frequency = my_ip .. "midi/mortal.mid", 880 -- excellent
---local download = my_ip .. "midi/ELO_Mr_Blue_Sky.mid"
 --local download = my_ip .. "midi/DrWho.mid"
---local download = my_ip .. "midi/Thunder_Struck.mid" -- may need instrument adjustment, freq 880
+--local download = "https://bitmidi.com/uploads/85263.mid" -- pirates of the carribean
 
---local download, base_frequency = my_ip .. "midi/sixmax/90s.txt", 880 -- very good, freq 880
+------------- OTHER GAMES
+--local download = "https://bitmidi.com/uploads/75622.mid" -- mortal kombat
+local download,base_frequency = my_ip .. "midi/mortal.mid", 880 -- excellent, better mortal combat
+--local download = "https://bitmidi.com/uploads/100444.mid" -- tetris
+--local download = "https://bitmidi.com/uploads/4280.mid" -- Age of empires 2 title theme (sounds like ass)
+--local download, base_frequency = "https://bitmidi.com/uploads/101128.mid", 440 -- dragonborn theme (awesome)
+--local download = "http://www.theparticle.com/files/library/audio/doom/d_e1m1.mid" -- doom theme
+
 --local download = my_ip .. "midi/sixmax/cynthia2.txt"
 --local download = my_ip .. "midi/sixmax/dsmn.mid"
 
@@ -80,454 +109,488 @@ local download, base_frequency = my_ip .. "midi/morezelda/The_Legend_of_Zelda_Th
 --local download, base_frequency = my_ip .. "midi/RushB.mid", 600 -- freq 600
 --local download, base_frequency = my_ip .. "midi/deathwaltz.mid", 880 -- freq 880
 
---local download, base_frequency = "http://extra.tools/midi/beach.mid", 880 -- meme, freq 880
---local download = "http://extra.tools/midi/heart.mid" -- titanic theme
---local download = "https://bitmidi.com/uploads/85738.mid" -- pokemon elite four
---local download = "https://bitmidi.com/uploads/85754.mid" -- pokemon center
-
---local download, base_frequency = "https://bitmidi.com/uploads/110325.mid", 880 -- mii channel, freq 880
---local download = "https://bitmidi.com/uploads/100444.mid" -- tetris
-
 --local forced_instrument = "sound/synth/tri.wav"
-local VOLUME_ADJUST = 0.25
+local VOLUME_ADJUST = 0.4
 local BLACK_MIDI = false
 local MAX_BLACK_MIDI_PER_INSTR = 4000
 
-local function doParse(str,callback)
-    changeName("Parsing MIDI file")
-    local co = coroutine.create( parseMIDI )
-    coroutine.resume( co, str, forced_instrument )
-    
-    local function checkQ(n)
-        return quotaAverage() < quotaMax()*n
-    end
-    
-    hook.add("think","parseMIDI",function()
-        local iter = 0
-        while checkQ(0.95) do
-            iter = iter + 1
-            if iter > 80 then break end
-            local status, errmsg = coroutine.resume( co )
-            
-            if status == false then
-                hook.remove( "think", "parseMIDI" )
-                error(errmsg)
-                return
-            end
-            
-            if coroutine.status( co ) == "dead" then
-                changeName("Done parsing!")
-                hook.remove( "think", "parseMIDI" )
-                callback( status )
-                return
-            end
-        end
-    end)
-end
+local already_done = false
+local function doAllTheThings()
+    if not hasPermission("bass.loadURL") then return end
+    if not hasPermission("bass.loadFile") then return end
+    if not hasPermission("bass.play2D") then return end
+    if not hasPermission("http.get",download) then return end
 
-local function playMIDI(parsed)
-    local format = parsed.format
-    
-    -- pre-load all instruments we need
-    -- this immediately destroys them again after because we
-    -- only want to cache the sound files so they can be loaded 
-    -- instantly as necessary later
-    local wait = 0
-    local num_instruments = 0
-    for _,v in pairs( parsed.instruments ) do num_instruments = num_instruments + v end
-    if bass.soundsLeft() < num_instruments then
-        changeName("Too many different instruments for current starfall bass limits (requires "..num_instruments.." of available "..bass.soundsLeft()..")")
-        error("Too many different instruments for current starfall bass limits (requires "..num_instruments.." of available "..bass.soundsLeft()..")") 
-    end
-    
-    local sound_channels = {}
-    
-    local channel_pitches = {}
-    
-    local available_instruments = {}
-    local instrument_status = {}
-    local function addAvailableSound(path,snd)
-        if not available_instruments[path] then available_instruments[path] = {} end
-        available_instruments[path][ #available_instruments[path]+1 ] = snd
+    if already_done then return end
+    already_done = true
+
+    local function doParse(str,callback)
+        changeName("Parsing MIDI file")
+        local co = coroutine.create( parseMIDI )
+        coroutine.resume( co, str, forced_instrument )
         
-        local length = snd:getLength()
-        local isLooped = false
-        if string.find( path, "/synth/" ) ~= nil then
-            snd:setLooping(true)
-            length = 9001
-            isLooped = true
+        local function checkQ(n)
+            return quotaAverage() < quotaMax()*n
         end
         
-        instrument_status[snd] = {
-            isPlaying = false,
-            soundDuration = length,
-            finishPlaying = 0,
-            isLooped = isLooped
-        }
-    end
-    
-    local function getAvailableSound(path)
-        local largest = 0
-        local largest_snd = available_instruments[path][1]
-    
-        for i=1, #available_instruments[path] do
-            local snd = available_instruments[path][i]
-            local status = instrument_status[snd]
-            
-            if status.isPlaying == false then
-                return snd
-            elseif status.isPlaying and timer.realtime() > status.finishPlaying then
-                snd:pause()
-                if not status.isLooped then snd:setTime(0) end
-                return snd
-            end
-            
-            if largest < status.finishPlaying then
-                largest = status.finishPlaying
-                largest_snd = snd
-            end
-        end
-        
-        return largest_snd
-    end
-    
-    local function getSoundByKey(path,key)
-        for i=1, #available_instruments[path] do
-            local snd = available_instruments[path][i]
-            local status = instrument_status[snd]
-            
-            if status.key == key then return snd end
-        end
-    end
-    
-    local function getPathFromChannel( channel )
-        return sound_channels[channel]
-    end
-    
-    local is_black_midi = false
-    if BLACK_MIDI and parsed.accuracy_ms > parsed.average_ms * parsed.smallest_deltatime then
-        print("BLACK MIDI DETECTED!",
-            "Accuracy",math.floor(parsed.accuracy_ms*10)/10,
-            "Average timing (ms)",parsed.average_ms,
-            "Smallest deltatime",parsed.smallest_deltatime,
-            "Required accuracy",math.floor(parsed.average_ms * parsed.smallest_deltatime * 10)/10
-        )
-        is_black_midi = true
-    end
-    
-    local loading = 0
-    local load_delay = 0.05
-    local proceed
-    changeName("Loading sound channels")
-    for instrument, num_per_instrument in pairs( parsed.instruments ) do
-        
-        if is_black_midi then
-            num_per_instrument = math.min(MAX_BLACK_MIDI_PER_INSTR,math.floor(num_per_instrument * (parsed.accuracy_ms / parsed.ms)))
-            load_delay = 0.05
-        end
-        
-        loading = loading + num_per_instrument
-        
-        timer.simple(wait,function()
-            local idx = 0
-            timer.create( "loadInstrument_"..instrument, load_delay, num_per_instrument, function()
-                idx = idx + 1
-                changeName("Loading " .. idx .. "/" .. num_per_instrument.." of '"..instrument.."'")
+        hook.add("think","parseMIDI",function()
+            local iter = 0
+            while checkQ(0.95) do
+                iter = iter + 1
+                if iter > 80 then break end
+                local status, errmsg = coroutine.resume( co )
                 
-                local function cb(snd,err,b)
-                    if err ~= 0 then
-                        changeName("unable to load sound '"..instrument.."'")
-                        print("sound error:",err,b)
-                    else
-                        addAvailableSound(instrument,snd)
-                    end
-                    
-                    loading = loading - 1
-                    if loading == 0 then
-                        changeName("Done loading!")
-                        proceed() 
-                    end
+                if status == false then
+                    hook.remove( "think", "parseMIDI" )
+                    error(errmsg)
+                    return
                 end
                 
-                if string.find(instrument,"http") then
-                    bass.loadURL( instrument, "noplay noblock", cb )
-                else
-                    bass.loadFile( instrument, "noplay noblock", cb )
+                if coroutine.status( co ) == "dead" then
+                    changeName("Done parsing!")
+                    hook.remove( "think", "parseMIDI" )
+                    callback( status )
+                    return
                 end
-            end)
+            end
         end)
-        
-        wait = wait + load_delay * (num_per_instrument+2)
     end
     
-    local function createSound( channel, path )
-        if parsed.instruments[path] then
-            sound_channels[channel] = path
-            --print("channel",channel,"set to",path)
+    local function playMIDI(parsed)
+        local format = parsed.format
+        
+        -- pre-load all instruments we need
+        -- this immediately destroys them again after because we
+        -- only want to cache the sound files so they can be loaded 
+        -- instantly as necessary later
+        local wait = 0
+        local num_instruments = 0
+        for _,v in pairs( parsed.instruments ) do num_instruments = num_instruments + v end
+        if bass.soundsLeft() < num_instruments then
+            changeName("Too many different instruments for current starfall bass limits (requires "..num_instruments.." of available "..bass.soundsLeft()..")")
+            error("Too many different instruments for current starfall bass limits (requires "..num_instruments.." of available "..bass.soundsLeft()..")") 
         end
-    end
-    
-    local key_to_freq = {
-        [88]=4186.009,[87]=3951.066,[86]=3729.31,
-        [85]=3520,[84]=3322.438,[83]=3135.963,
-        [82]=2959.955,[81]=2793.826,[80]=2637.02,
-        [79]=2489.016,[78]=2349.318,[77]=2217.461,
-        [76]=2093.005,[75]=1975.533,[74]=1864.655,
-        [73]=1760,[72]=1661.219,[71]=1567.982,
-        [70]=1479.978,[69]=1396.913,[68]=1318.51,
-        [67]=1244.508,[66]=1174.659,[65]=1108.731,
-        [64]=1046.502,[63]=987.7666,[62]=932.3275,
-        [61]=880,[60]=830.6094,[59]=783.9909,
-        [58]=739.9888,[57]=698.4565,[56]=659.2551,
-        [55]=622.254,[54]=587.3295,[53]=554.3653,
-        [52]=523.2511,[51]=493.8833,[50]=466.1638,
-        [49]=440,[48]=415.3047,[47]=391.9954,
-        [46]=369.9944,[45]=349.2282,[44]=329.6276,
-        [43]=311.127,[42]=293.6648,[41]=277.1826,
-        [40]=261.6256,[39]=246.9417,[38]=233.0819,
-        [37]=220,[36]=207.6523,[35]=195.9977,
-        [34]=184.9972,[33]=174.6141,[32]=164.8138,
-        [31]=155.5635,[30]=146.8324,[29]=138.5913,
-        [28]=130.8128,[27]=123.4708,[26]=116.5409,
-        [25]=110,[24]=103.8262,[23]=97.99886,
-        [22]=92.49861,[21]=87.30706,[20]=82.40689,
-        [19]=77.78175,[18]=73.41619,[17]=69.29566,
-        [16]=65.40639,[15]=61.73541,[14]=58.27047,
-        [13]=55,[12]=51.91309,[11]=48.99943,
-        [10]=46.2493,[9]=43.65353,[8]=41.20344,
-        [7]=38.89087,[6]=36.7081,[5]=34.64783,
-        [4]=32.7032,[3]=30.86771,[2]=29.13524,
-        [1]=27.5
-    }
-    
-    local function playSound( event )
-        local channel = event.channel
-        local key = event.param1
-        local velocity = event.param2
         
-        local path
-        if event.instrument then
-            path = event.instrument
-        else
-            path = getPathFromChannel(channel)
-        end
-        if not path then return end
-        --if not path then error("MIDI tried to use nonexistant sound channel '"..channel.."'") end
+        local sound_channels = {}
         
-        local basefreq = base_frequency or 440
-        --if string.find(string.lower(path),"piano") == nil then basefreq = 880 end
+        local channel_pitches = {}
+        
+        local available_instruments = {}
+        local instrument_status = {}
+        local function addAvailableSound(path,snd)
+            if not available_instruments[path] then available_instruments[path] = {} end
+            available_instruments[path][ #available_instruments[path]+1 ] = snd
             
-        local freq = key_to_freq[key] or basefreq
-        local pitchmult = freq / basefreq -- this will do for now, may fix later
-        
-        if channel == 9 then pitchmult = 1 end
-        
-        local volume = (velocity / 64) * VOLUME_ADJUST
-        
-        local pitch_bend = channel_pitches[channel] or 1
-        
-        local sound = getAvailableSound(path)
-        sound:setPos(chip():getPos())
-        sound:setPitch(pitchmult * pitch_bend)
-        sound:setVolume(volume)
-        sound:play()
-        
-        local status = instrument_status[sound]
-        status.channel = channel
-        status.pitchmult = pitchmult
-        status.finishPlaying = timer.realtime() + status.soundDuration * (1/pitchmult) + 0.05
-        status.isPlaying = true
-        status.key = key
-    end
-    
-    local function stopSound( event )
-        local channel = event.channel
-        local key = event.param1
-        local velocity = event.param2
-        
-        local path
-        if event.instrument then
-            path = event.instrument
-        else
-            path = getPathFromChannel(channel)
-        end
-        if not path then return end
-            
-        --if not path then error("MIDI tried to use nonexistant sound channel '"..channel.."'") end
-        
-        local sound = getSoundByKey(path,key)
-        if sound then
-            local status = instrument_status[sound]
-            status.finishPlaying = 0
-            status.isPlaying = false
-            status.key = false
-            
-            if event.channel ~= 9 then
-                sound:pause()
-                if not sound.isLooped then 
-                    sound:setTime(0)
-                end
+            local length = snd:getLength()
+            local isLooped = false
+            if string.find( path, "/synth/" ) ~= nil then
+                snd:setLooping(true)
+                length = 9001
+                isLooped = true
             end
+            
+            instrument_status[snd] = {
+                isPlaying = false,
+                soundDuration = length,
+                finishPlaying = 0,
+                isLooped = isLooped
+            }
         end
-    end
-    
-    local events = {
-        ["note on"] = function(event)
-            local velocity = event.param2
-            
-            if velocity == 0 then
-                stopSound( event )
-            else
-                playSound( event )
-            end
-        end,
-        ["note off"] = stopSound,
-        ["polyphonic pressure"] = function(event)
-            -- not used for now
-        end,
-        ["control change"] = function(event)
-            -- not used for now
-        end,
-        ["program change"] = function(event)
-            local channel = event.channel
-            local instrument = event.instrument
-            createSound( channel, instrument )
-        end,
-        ["channel pressure"] = function(event)
-            -- not used for now
-        end,
-        ["pitch bend"] = function(event)
-            --print("PITCH BEND",event.param2)
-            local pitch_bend = event.param2 or 8192
-            pitch_bend = 2 ^ ((((pitch_bend-8192) / 8192) * 2) / 12)
-            
-            channel_pitches[event.channel] = pitch_bend
-            for sound, status in pairs( instrument_status ) do
-                if status.isPlaying == true and status.channel == event.channel then
-                    sound:setPitch(status.pitchmult * pitch_bend)
-                end
-            end
-        end,
-        ["tempo"] = function(event)
-            parsed.ms = event.new_ms
-            --print("setting tempo, ms: "..parsed.ms..", tempo: "..event.param1..", ppqn: "..parsed.ppqn)
-        end,
-        ["end of track"] = function(event)
-            -- nothing for now
-        end
-    }
-    
-    proceed = function()
-        timer.simple(0.1,function()
-            local nextEvents = {}
-            name = ""
-            addName("Playing '"..download.."'!")
-            local start_play = timer.realtime()
-            
-            local function printableTime(seconds)
-                local time_left = math.ceil(seconds)
-                local mins = math.floor(time_left / 60)
-                local secs = math.floor(time_left % 60)
-                return string.format("%02d:%02d",mins,secs)
-            end
-            local total_time_printable = printableTime(parsed.playtime)
-            local nextupdate = timer.realtime() + 1
-            
-            hook.add("think","playthink",function()
-                local curtime = timer.realtime()
-                if nextupdate > curtime then
-                    nextupdate = curtime + 1
-                    local progress = (curtime - start_play) / parsed.playtime
-                    changeName("Playing! " .. 
-                                math.floor(progress*100) .. "%, " ..
-                                printableTime(parsed.playtime * progress) .. "/" ..
-                                total_time_printable )
+        
+        local function getAvailableSound(path)
+            local largest = 0
+            local largest_snd = available_instruments[path][1]
+        
+            for i=1, #available_instruments[path] do
+                local snd = available_instruments[path][i]
+                local status = instrument_status[snd]
+                
+                if status.isPlaying == false then
+                    return snd
+                elseif status.isPlaying and timer.realtime() > status.finishPlaying then
+                    snd:pause()
+                    if not status.isLooped then snd:setTime(0) end
+                    return snd
                 end
                 
-                for i=#nextEvents,1,-1 do
-                    local event = nextEvents[i]
-                    if timer.realtime() >= event.processAt then
-                        event.callback(event.processAt)
-                        table.remove(nextEvents,i)
-                    end
+                if largest < status.finishPlaying then
+                    largest = status.finishPlaying
+                    largest_snd = snd
                 end
-            end)
-            local function playTrack(track,callback)
-                local index = 1
-                local function doEvent(lastProcessTime)
-                    while true do
-                        local event = track[index]
-                        if not event or event.command == "end of track" then
-                            if callback then callback() end
-                            return
+            end
+            
+            return largest_snd
+        end
+        
+        local function getSoundByKey(path,key)
+            for i=1, #available_instruments[path] do
+                local snd = available_instruments[path][i]
+                local status = instrument_status[snd]
+                
+                if status.key == key then return snd end
+            end
+        end
+        
+        local function getPathFromChannel( channel )
+            return sound_channels[channel]
+        end
+        
+        local is_black_midi = false
+        if BLACK_MIDI and parsed.accuracy_ms > parsed.average_ms * parsed.smallest_deltatime then
+            print("BLACK MIDI DETECTED!",
+                "Accuracy",math.floor(parsed.accuracy_ms*10)/10,
+                "Average timing (ms)",parsed.average_ms,
+                "Smallest deltatime",parsed.smallest_deltatime,
+                "Required accuracy",math.floor(parsed.average_ms * parsed.smallest_deltatime * 10)/10
+            )
+            is_black_midi = true
+        end
+        
+        local loading = 0
+        local load_delay = 0.05
+        local proceed
+        changeName("Loading sound channels")
+        for instrument, num_per_instrument in pairs( parsed.instruments ) do
+            if string.find(instrument,"http") then
+                if not hasPermission("bass.loadURL",instrument) then
+                    notification.addLegacy( 
+                        "You have not given this chip permission to play the sound at url '"..instrument.."'", 
+                        NOTIFY.ERROR, 8 )
+                        
+                    already_done = false
+                    return
+                end
+            else
+                if not hasPermission("bass.loadFile",instrument) then
+                    notification.addLegacy( 
+                        "You have not given this chip permission to play the sound at file path '"..instrument.."'", 
+                        NOTIFY.ERROR, 8 )
+                        
+                    already_done = false
+                    return
+                end
+            end
+        
+            if is_black_midi then
+                num_per_instrument = math.min(MAX_BLACK_MIDI_PER_INSTR,math.floor(num_per_instrument * (parsed.accuracy_ms / parsed.ms)))
+                load_delay = 0.05
+            end
+            
+            loading = loading + num_per_instrument
+            
+            timer.simple(wait,function()
+                local idx = 0
+                timer.create( "loadInstrument_"..instrument, load_delay, num_per_instrument, function()
+                    idx = idx + 1
+                    changeName("Loading " .. idx .. "/" .. num_per_instrument.." of '"..instrument.."'")
+                    
+                    local function cb(snd,err,b)
+                        if err ~= 0 then
+                            changeName("unable to load sound '"..instrument.."'")
+                            print("sound error:",err,b)
+                        else
+                            addAvailableSound(instrument,snd)
                         end
                         
-                        if event.deltatime == 0 then
-                            --print("doing event",event.command,event.channel)
-                            if events[event.command] then
-                                events[event.command]( event )
-                            else
-                                error("Unknown MIDI command specified '"..event.command.."'")
-                            end
-                            
-                            index = index + 1
-                        else
-                            nextEvents[#nextEvents+1] = {
-                                processAt = lastProcessTime + parsed.ms * event.deltatime / 1000,
-                                callback = doEvent
-                            }
-                            event.deltatime = 0
-                            return
+                        loading = loading - 1
+                        if loading == 0 then
+                            changeName("Done loading!")
+                            proceed() 
                         end
                     end
+                    
+                    if string.find(instrument,"http") then
+                        bass.loadURL( instrument, "noplay noblock", cb )
+                    else
+                        bass.loadFile( instrument, "noplay noblock", cb )
+                    end
+                end)
+            end)
+            
+            wait = wait + load_delay * (num_per_instrument+2)
+        end
+        
+        local function createSound( channel, path )
+            if parsed.instruments[path] then
+                sound_channels[channel] = path
+                --print("channel",channel,"set to",path)
+            end
+        end
+        
+        local key_to_freq = {
+            [88]=4186.009,[87]=3951.066,[86]=3729.31,
+            [85]=3520,[84]=3322.438,[83]=3135.963,
+            [82]=2959.955,[81]=2793.826,[80]=2637.02,
+            [79]=2489.016,[78]=2349.318,[77]=2217.461,
+            [76]=2093.005,[75]=1975.533,[74]=1864.655,
+            [73]=1760,[72]=1661.219,[71]=1567.982,
+            [70]=1479.978,[69]=1396.913,[68]=1318.51,
+            [67]=1244.508,[66]=1174.659,[65]=1108.731,
+            [64]=1046.502,[63]=987.7666,[62]=932.3275,
+            [61]=880,[60]=830.6094,[59]=783.9909,
+            [58]=739.9888,[57]=698.4565,[56]=659.2551,
+            [55]=622.254,[54]=587.3295,[53]=554.3653,
+            [52]=523.2511,[51]=493.8833,[50]=466.1638,
+            [49]=440,[48]=415.3047,[47]=391.9954,
+            [46]=369.9944,[45]=349.2282,[44]=329.6276,
+            [43]=311.127,[42]=293.6648,[41]=277.1826,
+            [40]=261.6256,[39]=246.9417,[38]=233.0819,
+            [37]=220,[36]=207.6523,[35]=195.9977,
+            [34]=184.9972,[33]=174.6141,[32]=164.8138,
+            [31]=155.5635,[30]=146.8324,[29]=138.5913,
+            [28]=130.8128,[27]=123.4708,[26]=116.5409,
+            [25]=110,[24]=103.8262,[23]=97.99886,
+            [22]=92.49861,[21]=87.30706,[20]=82.40689,
+            [19]=77.78175,[18]=73.41619,[17]=69.29566,
+            [16]=65.40639,[15]=61.73541,[14]=58.27047,
+            [13]=55,[12]=51.91309,[11]=48.99943,
+            [10]=46.2493,[9]=43.65353,[8]=41.20344,
+            [7]=38.89087,[6]=36.7081,[5]=34.64783,
+            [4]=32.7032,[3]=30.86771,[2]=29.13524,
+            [1]=27.5
+        }
+        
+        local function playSound( event )
+            local channel = event.channel
+            local key = event.param1
+            local velocity = event.param2
+            
+            local path
+            if event.instrument then
+                path = event.instrument
+            else
+                path = getPathFromChannel(channel)
+            end
+            if not path then return end
+            --if not path then error("MIDI tried to use nonexistant sound channel '"..channel.."'") end
+            
+            local basefreq = base_frequency or 440
+            --if string.find(string.lower(path),"piano") == nil then basefreq = 880 end
+                
+            local freq = key_to_freq[key] or basefreq
+            local pitchmult = freq / basefreq -- this will do for now, may fix later
+            
+            if channel == 9 then pitchmult = 1 end
+            
+            local volume = (velocity / 64) * VOLUME_ADJUST
+            
+            local pitch_bend = channel_pitches[channel] or 1
+            
+            local sound = getAvailableSound(path)
+            sound:setPos(chip():getPos())
+            sound:setPitch(pitchmult * pitch_bend)
+            sound:setVolume(volume)
+            sound:play()
+            
+            local status = instrument_status[sound]
+            status.channel = channel
+            status.pitchmult = pitchmult
+            status.finishPlaying = timer.realtime() + status.soundDuration * (1/(pitchmult*pitch_bend)) + 0.05
+            status.isPlaying = true
+            status.key = key
+        end
+        
+        local function stopSound( event )
+            local channel = event.channel
+            local key = event.param1
+            local velocity = event.param2
+            
+            local path
+            if event.instrument then
+                path = event.instrument
+            else
+                path = getPathFromChannel(channel)
+            end
+            if not path then return end
+                
+            --if not path then error("MIDI tried to use nonexistant sound channel '"..channel.."'") end
+            
+            local sound = getSoundByKey(path,key)
+            if sound then
+                local status = instrument_status[sound]
+                status.finishPlaying = 0
+                status.isPlaying = false
+                status.key = false
+                
+                if event.channel ~= 9 then
+                    sound:pause()
+                    if not sound.isLooped then 
+                        sound:setTime(0)
+                    end
+                end
+            end
+        end
+        
+        local events = {
+            ["note on"] = function(event)
+                local velocity = event.param2
+                
+                if velocity == 0 then
+                    stopSound( event )
+                else
+                    playSound( event )
+                end
+            end,
+            ["note off"] = stopSound,
+            ["polyphonic pressure"] = function(event)
+                -- not used for now
+            end,
+            ["control change"] = function(event)
+                -- not used for now
+            end,
+            ["program change"] = function(event)
+                local channel = event.channel
+                local instrument = event.instrument
+                createSound( channel, instrument )
+            end,
+            ["channel pressure"] = function(event)
+                -- not used for now
+            end,
+            ["pitch bend"] = function(event)
+                --print("PITCH BEND",event.param2)
+                local pitch_bend = event.param2 or 8192
+                pitch_bend = 2 ^ ((((pitch_bend-8192) / 8192) * 2) / 12)
+                
+                channel_pitches[event.channel] = pitch_bend
+                for sound, status in pairs( instrument_status ) do
+                    if status.isPlaying == true and status.channel == event.channel then
+                        sound:setPitch(status.pitchmult * pitch_bend)
+                    end
+                end
+            end,
+            ["tempo"] = function(event)
+                parsed.ms = event.new_ms
+                --print("setting tempo, ms: "..parsed.ms..", tempo: "..event.param1..", ppqn: "..parsed.ppqn)
+            end,
+            ["end of track"] = function(event)
+                -- nothing for now
+            end
+        }
+        
+        proceed = function()
+            timer.simple(0.1,function()
+                local nextEvents = {}
+                name = ""
+                addName("Playing '"..download.."'!")
+                local start_play = timer.realtime()
+                
+                local function printableTime(seconds)
+                    local time_left = math.ceil(seconds)
+                    local mins = math.floor(time_left / 60)
+                    local secs = math.floor(time_left % 60)
+                    return string.format("%02d:%02d",mins,secs)
+                end
+                local total_time_printable = printableTime(parsed.playtime)
+                local nextupdate = timer.realtime() + 1
+                
+                hook.add("think","playthink",function()
+                    local curtime = timer.realtime()
+                    if nextupdate > curtime then
+                        nextupdate = curtime + 1
+                        local progress = (curtime - start_play) / parsed.playtime
+                        changeName("Playing! " .. 
+                                    math.floor(progress*100) .. "%, " ..
+                                    printableTime(parsed.playtime * progress) .. "/" ..
+                                    total_time_printable )
+                    end
+                    
+                    for i=#nextEvents,1,-1 do
+                        local event = nextEvents[i]
+                        if timer.realtime() >= event.processAt then
+                            event.callback(event.processAt)
+                            table.remove(nextEvents,i)
+                        end
+                    end
+                end)
+                local function playTrack(track,callback)
+                    local index = 1
+                    local function doEvent(lastProcessTime)
+                        while true do
+                            local event = track[index]
+                            if not event or event.command == "end of track" then
+                                if callback then callback() end
+                                return
+                            end
+                            
+                            if event.deltatime == 0 then
+                                --print("doing event",event.command,event.channel)
+                                if events[event.command] then
+                                    events[event.command]( event )
+                                else
+                                    error("Unknown MIDI command specified '"..event.command.."'")
+                                end
+                                
+                                index = index + 1
+                            else
+                                nextEvents[#nextEvents+1] = {
+                                    processAt = lastProcessTime + parsed.ms * event.deltatime / 1000,
+                                    callback = doEvent
+                                }
+                                event.deltatime = 0
+                                return
+                            end
+                        end
+                    end
+                    
+                    doEvent(timer.realtime())
                 end
                 
-                doEvent(timer.realtime())
-            end
-            
-            if format == 0 then -- only one track
-                changeName("Playing 1st track!")
-                playTrack(parsed.tracks[1],function()
-                    changeName("Done playing!")
-                    hook.remove("think","playthink")
-                end)    
-            elseif format == 1 then -- several tracks, and first tracks contains all tempos
-                changeName("Playing!")
-                local played = #parsed.tracks
-                for i=1,#parsed.tracks do
-                    --if i==9 then continue end
-                    playTrack(parsed.tracks[i],function()
-                        played = played - 1
-                        if played == 0 then
+                if format == 0 then -- only one track
+                    changeName("Playing 1st track!")
+                    playTrack(parsed.tracks[1],function()
+                        changeName("Done playing!")
+                        hook.remove("think","playthink")
+                    end)    
+                elseif format == 1 then -- several tracks, and first tracks contains all tempos
+                    changeName("Playing!")
+                    local played = #parsed.tracks
+                    for i=1,#parsed.tracks do
+                        --if i==9 then continue end
+                        playTrack(parsed.tracks[i],function()
+                            played = played - 1
+                            if played == 0 then
+                                changeName("Done playing!")
+                                hook.remove("think","playthink")
+                            end
+                        end)
+                    end
+                elseif format == 2 then -- several tracks, played one at a time
+                    --print("format is 2, playing all tracks one by one")
+                    local current_track = 0
+                    local function playNext()
+                        current_track = current_track + 1
+                        if parsed.tracks[current_track] then
+                            changeName("Playing track nr "..current_track.."!")
+                            playTrack(parsed.tracks[current_track],function()
+                                changeName("Track '"..current_track.."' done, playing next track in 4 seconds...")
+                                timer.simple(4,playNext)
+                            end)
+                        else
                             changeName("Done playing!")
                             hook.remove("think","playthink")
                         end
-                    end)
-                end
-            elseif format == 2 then -- several tracks, played one at a time
-                --print("format is 2, playing all tracks one by one")
-                local current_track = 0
-                local function playNext()
-                    current_track = current_track + 1
-                    if parsed.tracks[current_track] then
-                        changeName("Playing track nr "..current_track.."!")
-                        playTrack(parsed.tracks[current_track],function()
-                            changeName("Track '"..current_track.."' done, playing next track in 4 seconds...")
-                            timer.simple(4,playNext)
-                        end)
-                    else
-                        changeName("Done playing!")
-                        hook.remove("think","playthink")
                     end
+                    playNext()
                 end
-                playNext()
-            end
-        end)
+            end)
+        end
     end
+    
+    addName("Downloading '"..download.."'")
+    http.get(download,function(str)
+        changeName("Done downloading!")
+        doParse(str,playMIDI)
+    end,function(a,b,c) print(a,b,c) end)
 end
 
-addName("Downloading '"..download.."'")
-http.get(download,function(str)
-    changeName("Done downloading!")
-    doParse(str,playMIDI)
-end,function(a,b,c) print(a,b,c) end)
+setupPermissionRequest({
+    "bass.loadURL",
+    "bass.loadFile",
+    --"bass.whitelist",
+    "bass.play2D",
+    "http.get",
+    --"http.whitelist"
+}, "midi for days", true)
+
+hook.add("permissionrequest", "permission", doAllTheThings )
+doAllTheThings()

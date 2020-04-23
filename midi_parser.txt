@@ -148,12 +148,12 @@ function parseMIDI( str, forced_instrument )
         
         local tempo = 120000 -- default tempo of 120
         parsed.ms = tempo2ms(tempo)
-        print("Tempo timing",parsed.ms)
+        --print("Tempo timing",parsed.ms,"ppqn",parsed.ppqn)
     elseif tickmethod == 1 then -- absolute timing. bits 8-14 = frames per second. bits 0-7 = sub divisions per frame
         parsed.fps = rshift(band(tickdiv,0x7FFF),8)
         parsed.subdivisions = band(tickdiv,0xFF)
         parsed.ms = parsed.fps / parsed.subdivisions
-        print("Absolute timing",parsed.ms)
+        --print("Absolute timing",parsed.ms)
     end
 
     parsed.format = format

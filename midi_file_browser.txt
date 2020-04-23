@@ -1,0 +1,111 @@
+--@name midi file browser
+--@author Divran
+--@shared
+
+local function getAllPlayers(notme)
+    local filter = function(e) return not e:isBot() end
+    if notme then 
+        filter = function(e)
+            if e == owner() then return false end
+            if e:isBot() then return false end
+            return true
+        end
+    end
+    return find.allPlayers(filter)
+end
+
+if CLIENT then
+    local screen
+    
+    render.createRenderTarget("myrendertarget")
+    local font = render.createFont( "Roboto", "100", "700", true, false, false, false, false, true )
+    
+    local rendered = false
+    hook.add("renderoffscreen","stuff",function()
+        render.selectRenderTarget("myrendertarget")
+        render.setColor(Color(255,255,255))
+        render.setFont(font)
+        render.drawText(512,512,"memes",1)
+        hook.remove("renderoffscreen","stuff")
+    end)
+
+    local function setupScreen()
+        hook.add("render","meme",function()
+            render.setRenderTargetTexture("myrendertarget")
+            local t = timer.realtime()
+            render.drawTexturedRectRotatedFast(
+                math.sin((t*2)%(math.pi*2))*128+256,
+                math.cos((t*1)%(math.pi*2))*128+256,
+                512,512,
+                math.deg(math.sin(t*3))
+            )
+        end)
+    end
+    
+    hook.add("starfallUsed","memes",function(activator,used)
+        if activator ~= owner() then return end
+        if used ~= screen then return end
+    
+    end)
+    
+    net.receive("screenAction_Client",function()
+        local data = net.readTable()
+        
+    end)
+    
+    net.receive("screenLinked",function()
+        screen = net.readEntity()
+        print("SCREEN LINKED",screen)
+        setupScreen()
+    end)
+else
+    net.receive("screenAction_Server",function()
+        local targets = getAllPlayers(true)
+        
+        if #targets == 0 then return end
+        net.start("screenAction_Client")
+            net.writeTable(net.readTable())
+        net.send(targets)
+    end)
+    
+    local screen
+    local clientsInitialized = {}
+    local function syncScreen()
+        if screen and #clientsInitialized > 0 then
+            print("syncing screen:",screen)
+            net.start("screenLinked")
+                net.writeEntity(screen)
+            net.send(clientsInitialized)
+            clientsInitialized = {}
+        end
+    end
+    hook.add("ClientInitialized","asd",function(ply)
+        clientsInitialized[#clientsInitialized+1] = ply
+        syncScreen()
+    end)
+    
+    local function linkScreen()
+        local checkAgain = 0
+        hook.add("think","linkScreen",function()
+            if timer.curtime() < checkAgain then return end
+            checkAgain = timer.curtime() + 0.5
+        
+            screen = chip():getLinkedComponents()[1]
+            
+            if not screen then
+                local own = owner()
+                screen = find.closest(
+                    find.byClass("starfall_screen",function(e) return e:getOwner() == own end),
+                    chip():getPos()
+                )
+            end
+            
+            if screen then
+                screen:linkComponent(chip())
+                hook.remove("think","linkScreen")
+                syncScreen()
+            end
+        end)
+    end
+    linkScreen()
+end
